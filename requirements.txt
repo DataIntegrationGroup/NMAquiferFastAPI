@@ -1,0 +1,5 @@
+fastapi
+fastapi_pagination
+uvicorn
+sqlalchemy
+pymssql
