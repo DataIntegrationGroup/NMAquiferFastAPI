@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2023 Jake Ross
+# Copyright 2023 ross
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from fastapi import FastAPI
+import strawberry
+from strawberry.asgi import GraphQL
 
-app = FastAPI()
+@strawberry.type
+class User:
+    name: str
+    age: int
 
 
-from graphql_app import graphql_app
+@strawberry.type
+class Query:
+    @strawberry.field
+    def user(self) -> User:
+        return User(name="Patrick", age=100)
 
-app.add_route("/graphql", graphql_app)
-app.add_websocket_route("/graphql", graphql_app)
 
+schema = strawberry.Schema(query=Query)
+
+
+graphql_app = GraphQL(schema)
 # ============= EOF =============================================

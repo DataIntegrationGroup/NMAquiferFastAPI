@@ -7,3 +7,4 @@ requests
 jinja2
 plotly
 pandas
+strawberry-graphql[debug-server]
