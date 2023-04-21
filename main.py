@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import json
 from pprint import pprint
 
 import requests
@@ -29,6 +30,7 @@ import models
 import schemas
 from app import app
 from database import SessionLocal
+import plotly.graph_objects as go
 
 templates = Jinja2Templates(directory="templates")
 
@@ -47,6 +49,9 @@ def public_release_filter(q):
 
 # ===============================================================================
 # views
+import plotly.express as px
+import plotly
+
 
 @app.get('/location_view', response_class=HTMLResponse)
 def location_view(request: Request, pointid: str = None, db: Session = Depends(get_db)):
@@ -59,10 +64,29 @@ def location_view(request: Request, pointid: str = None, db: Session = Depends(g
         well = wells[0]
         pods = well.pods
 
+        fig = go.Figure()
+        manual_waterlevels = _read_waterlevels_query(pointid, db).all()
+        mxs = [w.DateMeasured for w in manual_waterlevels]
+        mys = [w.DepthToWaterBGS for w in manual_waterlevels]
+
+        fig.add_trace(go.Scatter(x=mxs, y=mys, mode='markers', name='Manual Water Levels'))
+
+        pressure_waterlevels = _read_waterlevels_pressure_query(pointid, db, as_dict=True).all()
+        pxs = [w.DateMeasured for w in pressure_waterlevels]
+        pys = [w.DepthToWaterBGS for w in pressure_waterlevels]
+        fig.add_trace(go.Scatter(x=pxs, y=pys, mode='lines', name='Continuous Water Levels'))
+
+        fig.update_layout(xaxis={'title': 'Date Measured'},
+                         yaxis={'title': 'Depth to Water BGS (ft)',
+                               'autorange': 'reversed'
+                               })
+        graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
         return templates.TemplateResponse('location_view.html', {'request': request,
                                                                  'location': loc,
                                                                  'well': well,
-                                                                 'pods': pods, })
+                                                                 'pods': pods,
+                                                                 'graphJSON': graphJSON})
 
 
 # end views
@@ -113,7 +137,7 @@ def _read_pods(pointid, db):
         ps = q.all()
 
         for pi in ps:
-            print(pi)
+            # print(pi)
             ose_id = pi.OSEWellID
             if ose_id:
                 url = f'https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/OSE_PODs/FeatureServer/0/query' \
@@ -124,7 +148,7 @@ def _read_pods(pointid, db):
                 resp = resp.json()
                 # pprint(resp)
                 pods = resp.get('features')
-                pprint(pods)
+                # pprint(pods)
                 # for pod in pods:
                 #     print(pod.keys())
 
@@ -136,15 +160,38 @@ def _read_pods(pointid, db):
 @app.get("/waterlevels", response_model=Page[schemas.WaterLevels])
 @app.get("/waterlevels/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevels])
 def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
-    q = db.query(models.WaterLevels)
+    q = _read_waterlevels_query(pointid, db)
+    return paginate(q)
+
+
+def _read_waterlevels_pressure_query(pointid, db, as_dict=False):
+    if as_dict:
+        q = db.query(models.WaterLevelsContinuous_Pressure.__table__)
+    else:
+        q = db.query(models.WaterLevelsContinuous_Pressure)
+
     if pointid:
         q = q.join(models.Well)
         q = q.join(models.Location)
         q = q.filter(models.Location.PointID == pointid)
-    q = q.order_by(models.WaterLevels.OBJECTID)
+    q = q.order_by(models.WaterLevelsContinuous_Pressure.DateMeasured)
     q = public_release_filter(q)
+    return q
 
-    return paginate(q)
+
+def _read_waterlevels_query(pointid, db, as_dict=False):
+    if as_dict:
+        q = db.query(models.WaterLevels.__table__)
+    else:
+        q = db.query(models.WaterLevels)
+
+    if pointid:
+        q = q.join(models.Well)
+        q = q.join(models.Location)
+        q = q.filter(models.Location.PointID == pointid)
+    q = q.order_by(models.WaterLevels.DateMeasured)
+    q = public_release_filter(q)
+    return q
 
 
 @app.get("/waterlevels_pressure", response_model=Page[schemas.WaterLevelsContinuous_Pressure])

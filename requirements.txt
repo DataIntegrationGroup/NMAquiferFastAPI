@@ -5,3 +5,5 @@ sqlalchemy
 pymssql
 requests
 jinja2
+plotly
+pandas
