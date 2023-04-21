@@ -3,3 +3,5 @@ fastapi_pagination
 uvicorn
 sqlalchemy
 pymssql
+requests
+jinja2
