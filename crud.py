@@ -15,10 +15,13 @@
 # ===============================================================================
 import models
 
+
 def public_release_filter(q):
     return q.filter(models.Location.PublicRelease == True)
 
+
 # readers
+
 
 def _read_waterlevels_pressure_query(pointid, db, as_dict=False):
     if as_dict:
@@ -35,7 +38,6 @@ def _read_waterlevels_pressure_query(pointid, db, as_dict=False):
     return q
 
 
-
 def _read_waterlevels_query(pointid, db, as_dict=False):
     if as_dict:
         q = db.query(models.WaterLevels.__table__)
@@ -49,7 +51,6 @@ def _read_waterlevels_query(pointid, db, as_dict=False):
     q = q.order_by(models.WaterLevels.DateMeasured)
     q = public_release_filter(q)
     return q
-
 
 
 def _read_pods(pointid, db):
@@ -79,5 +80,6 @@ def _read_pods(pointid, db):
                 pi.pods = pods
 
         return ps
+
 
 # ============= EOF =============================================

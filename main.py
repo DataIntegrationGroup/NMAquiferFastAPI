@@ -33,7 +33,12 @@ from typing import List
 import models
 import schemas
 from app import app
-from crud import _read_waterlevels_query, public_release_filter, _read_pods, _read_waterlevels_pressure_query
+from crud import (
+    _read_waterlevels_query,
+    public_release_filter,
+    _read_pods,
+    _read_waterlevels_pressure_query,
+)
 from database import SessionLocal
 import plotly.graph_objects as go
 
@@ -71,9 +76,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     mxs = [w.DateMeasured for w in manual_waterlevels]
     mys = [w.DepthToWaterBGS for w in manual_waterlevels]
 
-    fig.add_trace(
-        go.Scatter(x=mxs, y=mys, mode="markers", name="Manual Water Levels")
-    )
+    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual Water Levels"))
 
     pressure_waterlevels = _read_waterlevels_pressure_query(
         pointid, db, as_dict=True
@@ -113,7 +116,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
 def read_locations(pointid: str = None, db: Session = Depends(get_db)):
     q = db.query(models.Location)
     if pointid:
-        q = q.filter(models.Location.PointID.like(f'%{pointid}%'))
+        q = q.filter(models.Location.PointID.like(f"%{pointid}%"))
 
     q = q.order_by(models.Location.LocationId)
     q = public_release_filter(q)
@@ -162,7 +165,6 @@ def read_pods(pointid: str = None, db: Session = Depends(get_db)):
     return pods
 
 
-
 @app.get("/waterlevels", response_model=Page[schemas.WaterLevels])
 @app.get(
     "/waterlevels/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevels]
@@ -170,8 +172,6 @@ def read_pods(pointid: str = None, db: Session = Depends(get_db)):
 def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
     q = _read_waterlevels_query(pointid, db)
     return paginate(q)
-
-
 
 
 @app.get(
