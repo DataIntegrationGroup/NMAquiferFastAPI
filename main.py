@@ -15,39 +15,28 @@
 # ===============================================================================
 import json
 
-import plotly
-
 from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse
-from fastapi_pagination import LimitOffsetPage, Page, add_pagination
-from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import add_pagination
 
 from sqlalchemy.orm import Session
-from starlette.responses import Response
-from starlette.status import HTTP_200_OK
-from starlette.templating import Jinja2Templates
-from typing import List
 
 import models
-import schemas
 from app import app
+
 from crud import (
     _read_waterlevels_query,
     public_release_filter,
     _read_pods,
     _read_waterlevels_pressure_query,
 )
-from crud import (
-    _read_waterlevels_query,
-    public_release_filter,
-    _read_pods,
-    _read_waterlevels_pressure_query,
-)
-from database import SessionLocal
+
+import plotly
 import plotly.graph_objects as go
 
 from dependencies import get_db
-from routers import locations, wells, waterlevels
+from routers import locations, wells, waterlevels, ngwmn
+from starlette.templating import Jinja2Templates
 
 templates = Jinja2Templates(directory="templates")
 
@@ -111,8 +100,8 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
 app.include_router(locations.router)
 app.include_router(wells.router)
 app.include_router(waterlevels.router)
+app.include_router(ngwmn.router)
 add_pagination(app)
-
 
 if __name__ == "__main__":
     import uvicorn
