@@ -53,7 +53,7 @@ import plotly.express as px
 import plotly
 
 
-@app.get('/location_view', response_class=HTMLResponse)
+@app.get("/location_view", response_class=HTMLResponse)
 def location_view(request: Request, pointid: str = None, db: Session = Depends(get_db)):
     if pointid:
         q = db.query(models.Location.__table__)
@@ -69,28 +69,40 @@ def location_view(request: Request, pointid: str = None, db: Session = Depends(g
         mxs = [w.DateMeasured for w in manual_waterlevels]
         mys = [w.DepthToWaterBGS for w in manual_waterlevels]
 
-        fig.add_trace(go.Scatter(x=mxs, y=mys, mode='markers', name='Manual Water Levels'))
+        fig.add_trace(
+            go.Scatter(x=mxs, y=mys, mode="markers", name="Manual Water Levels")
+        )
 
-        pressure_waterlevels = _read_waterlevels_pressure_query(pointid, db, as_dict=True).all()
+        pressure_waterlevels = _read_waterlevels_pressure_query(
+            pointid, db, as_dict=True
+        ).all()
         pxs = [w.DateMeasured for w in pressure_waterlevels]
         pys = [w.DepthToWaterBGS for w in pressure_waterlevels]
-        fig.add_trace(go.Scatter(x=pxs, y=pys, mode='lines', name='Continuous Water Levels'))
+        fig.add_trace(
+            go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous Water Levels")
+        )
 
-        fig.update_layout(xaxis={'title': 'Date Measured'},
-                         yaxis={'title': 'Depth to Water BGS (ft)',
-                               'autorange': 'reversed'
-                               })
+        fig.update_layout(
+            xaxis={"title": "Date Measured"},
+            yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
+        )
         graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
-        return templates.TemplateResponse('location_view.html', {'request': request,
-                                                                 'location': loc,
-                                                                 'well': well,
-                                                                 'pods': pods,
-                                                                 'graphJSON': graphJSON})
+        return templates.TemplateResponse(
+            "location_view.html",
+            {
+                "request": request,
+                "location": loc,
+                "well": well,
+                "pods": pods,
+                "graphJSON": graphJSON,
+            },
+        )
 
 
 # end views
 # ===============================================================================
+
 
 # ===============================================================================
 # routes
@@ -105,9 +117,13 @@ def read_locations(pointid: str = None, db: Session = Depends(get_db)):
     return paginate(q)
 
 
-@app.get('/locations/{location_id}', response_model=schemas.Location)
+@app.get("/locations/{location_id}", response_model=schemas.Location)
 def read_location(location_id: UUID, db: Session = Depends(get_db)):
-    return db.query(models.Location).filter(models.Location.LocationId == location_id).first()
+    return (
+        db.query(models.Location)
+        .filter(models.Location.LocationId == location_id)
+        .first()
+    )
 
 
 @app.get("/well", response_model=schemas.Well)
@@ -140,14 +156,16 @@ def _read_pods(pointid, db):
             # print(pi)
             ose_id = pi.OSEWellID
             if ose_id:
-                url = f'https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/OSE_PODs/FeatureServer/0/query' \
-                      f'?where' \
-                      f'=db_file= \'{ose_id}\' &outFields=*&outSR=4326&f=json'
+                url = (
+                    f"https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/OSE_PODs/FeatureServer/0/query"
+                    f"?where"
+                    f"=db_file= '{ose_id}' &outFields=*&outSR=4326&f=json"
+                )
 
                 resp = requests.get(url)
                 resp = resp.json()
                 # pprint(resp)
-                pods = resp.get('features')
+                pods = resp.get("features")
                 # pprint(pods)
                 # for pod in pods:
                 #     print(pod.keys())
@@ -158,7 +176,9 @@ def _read_pods(pointid, db):
 
 
 @app.get("/waterlevels", response_model=Page[schemas.WaterLevels])
-@app.get("/waterlevels/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevels])
+@app.get(
+    "/waterlevels/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevels]
+)
 def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
     q = _read_waterlevels_query(pointid, db)
     return paginate(q)
@@ -194,8 +214,13 @@ def _read_waterlevels_query(pointid, db, as_dict=False):
     return q
 
 
-@app.get("/waterlevels_pressure", response_model=Page[schemas.WaterLevelsContinuous_Pressure])
-@app.get("/waterlevels_pressure/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevelsContinuous_Pressure])
+@app.get(
+    "/waterlevels_pressure", response_model=Page[schemas.WaterLevelsContinuous_Pressure]
+)
+@app.get(
+    "/waterlevels_pressure/limit-offset",
+    response_model=LimitOffsetPage[schemas.WaterLevelsContinuous_Pressure],
+)
 def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
     q = db.query(models.WaterLevelsContinuous_Pressure)
     if pointid:
@@ -210,7 +235,7 @@ def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
 
 add_pagination(app)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app)

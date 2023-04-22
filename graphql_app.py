@@ -16,6 +16,7 @@
 import strawberry
 from strawberry.asgi import GraphQL
 
+
 @strawberry.type
 class User:
     name: str
