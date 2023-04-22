@@ -14,11 +14,9 @@
 # limitations under the License.
 # ===============================================================================
 import json
-from pprint import pprint
 
 import plotly
-import requests
-from uuid import UUID
+
 from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi_pagination import LimitOffsetPage, Page, add_pagination
@@ -33,6 +31,7 @@ from typing import List
 import models
 import schemas
 from app import app
+from crud import _read_waterlevels_query, public_release_filter, _read_pods, _read_waterlevels_pressure_query
 from crud import (
     _read_waterlevels_query,
     public_release_filter,
@@ -42,21 +41,13 @@ from crud import (
 from database import SessionLocal
 import plotly.graph_objects as go
 
+from dependencies import get_db
+from routers import locations, wells, waterlevels
+
 templates = Jinja2Templates(directory="templates")
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 # ===============================================================================
 # views
-
-
 @app.get("/location/view/{pointid}", response_class=HTMLResponse)
 def location_view(request: Request, pointid: str, db: Session = Depends(get_db)):
     q = db.query(models.Location.__table__)
@@ -111,89 +102,11 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
 
 # ===============================================================================
 # routes
-@app.get("/locations", response_model=Page[schemas.Location])
-@app.get("/locations/limit-offset", response_model=LimitOffsetPage[schemas.Location])
-def read_locations(pointid: str = None, db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    if pointid:
-        q = q.filter(models.Location.PointID.like(f"%{pointid}%"))
-
-    q = q.order_by(models.Location.LocationId)
-    q = public_release_filter(q)
-    return paginate(q)
-
-
-@app.get("/location/{location_id}", response_model=schemas.Location)
-def read_location(location_id: UUID, db: Session = Depends(get_db)):
-    return (
-        db.query(models.Location)
-        .filter(models.Location.LocationId == location_id)
-        .first()
-    )
-
-
-@app.get("/location/pointid/{pointid}", response_model=schemas.Location)
-def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
-    loc = q.first()
-    if loc is None:
-        loc = Response(status_code=HTTP_200_OK)
-
-    return loc
-
-
-@app.get("/well", response_model=schemas.Well)
-def read_well(pointid: str = None, db: Session = Depends(get_db)):
-    q = db.query(models.Well)
-    if pointid:
-        q = q.join(models.Location)
-        q = q.filter(models.Location.PointID == pointid)
-        q = q.order_by(models.Well.WellID)
-        q = public_release_filter(q)
-        return q.first()
-    else:
-        return Response(status_code=HTTP_200_OK)
-
-
-@app.get("/pod", response_model=List[schemas.Well])
-def read_pods(pointid: str = None, db: Session = Depends(get_db)):
-    pods = _read_pods(pointid, db)
-    if pods is None:
-        pods = Response(status_code=HTTP_200_OK)
-    return pods
-
-
-@app.get("/waterlevels", response_model=Page[schemas.WaterLevels])
-@app.get(
-    "/waterlevels/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevels]
-)
-def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
-    q = _read_waterlevels_query(pointid, db)
-    return paginate(q)
-
-
-@app.get(
-    "/waterlevels_pressure", response_model=Page[schemas.WaterLevelsContinuous_Pressure]
-)
-@app.get(
-    "/waterlevels_pressure/limit-offset",
-    response_model=LimitOffsetPage[schemas.WaterLevelsContinuous_Pressure],
-)
-def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
-    q = db.query(models.WaterLevelsContinuous_Pressure)
-    if pointid:
-        q = q.join(models.Well)
-        q = q.join(models.Location)
-        q = q.filter(models.Location.PointID == pointid)
-    q = q.order_by(models.WaterLevelsContinuous_Pressure.OBJECTID)
-    q = public_release_filter(q)
-
-    return paginate(q)
-
-
+app.include_router(locations.router)
+app.include_router(wells.router)
+app.include_router(waterlevels.router)
 add_pagination(app)
+
 
 if __name__ == "__main__":
     import uvicorn
