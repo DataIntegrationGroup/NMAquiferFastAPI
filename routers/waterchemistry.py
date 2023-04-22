@@ -19,9 +19,12 @@ from fastapi import APIRouter
 
 from schemas import waterchemistry
 
-router = APIRouter(prefix='/waterchem', tags=['waterchem'])
+router = APIRouter(prefix="/waterchem", tags=["waterchem"])
+
 
 @router.get("/{pointid}/{analyte}", response_model=List[waterchemistry.Analyte])
 async def read_analyte(pointid: str, analyte: str):
     pass
+
+
 # ============= EOF =============================================

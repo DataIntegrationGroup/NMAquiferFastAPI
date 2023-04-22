@@ -17,8 +17,8 @@ from fastapi import FastAPI
 
 app = FastAPI(
     title="NMAquiferAPI",
-    description='''This is a REST API for the New Mexico Aquifer Mapping Programs database. 
-    It provides access water levels and water chemistry data for groundwater and surface water in New Mexico.''',
+    description="""This is a REST API for the New Mexico Aquifer Mapping Programs database. 
+    It provides access water levels and water chemistry data for groundwater and surface water in New Mexico.""",
     version="0.0.1",
     terms_of_service="http://example.com/terms/",
     contact={

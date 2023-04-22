@@ -35,4 +35,6 @@ class WaterLevelsContinuous_Pressure(Measurement):
 class WaterLevelsContinuous_Acoustic(Measurement):
     DepthToWaterBGS: Union[float, None] = Field(..., alias="depth_to_water_ftbgs")
     DateMeasured: Union[datetime, None] = Field(..., alias="measurement_datetime")
+
+
 # ============= EOF =============================================

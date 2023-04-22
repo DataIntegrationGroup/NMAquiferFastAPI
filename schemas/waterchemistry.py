@@ -18,4 +18,6 @@ from pydantic import BaseModel
 
 class Analyte(BaseModel):
     pass
+
+
 # ============= EOF =============================================

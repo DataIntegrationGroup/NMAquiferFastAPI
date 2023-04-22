@@ -23,6 +23,7 @@ def public_release_filter(q):
 
 # readers
 
+
 def read_waterlevels_acoustic_query(pointid, db, as_dict=False):
     if as_dict:
         q = db.query(models.WaterLevelsContinuous_Acoustic.__table__)
@@ -36,6 +37,7 @@ def read_waterlevels_acoustic_query(pointid, db, as_dict=False):
     q = q.order_by(models.WaterLevelsContinuous_Acoustic.DateMeasured)
     q = public_release_filter(q)
     return q
+
 
 def read_waterlevels_pressure_query(pointid, db, as_dict=False):
     if as_dict:

@@ -21,7 +21,7 @@ from starlette.responses import Response
 from dependencies import get_db
 from ngwmn import make_waterlevels, make_wellconstruction, make_lithology
 
-router = APIRouter(prefix='/ngwmn', tags=['ngwmn'])
+router = APIRouter(prefix="/ngwmn", tags=["ngwmn"])
 
 
 @router.get("/waterlevels/{pointid}")
@@ -40,4 +40,6 @@ async def read_ngwmn_wellconstruction(pointid: str, db=Depends(get_db)):
 async def read_ngwmn_lithology(pointid: str, db=Depends(get_db)):
     data = make_lithology(pointid, db)
     return Response(content=data, media_type="application/xml")
+
+
 # ============= EOF =============================================

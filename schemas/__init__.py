@@ -24,12 +24,11 @@ class ORMBaseModel(BaseModel):
         orm_mode = True
         allow_population_by_field_name = True
 
+
 class Measurement(ORMBaseModel):
     MeasurementMethod: Union[str, None] = Field(..., alias="measurement_method")
     MeasuringAgency: Union[str, None] = Field(..., alias="measuring_agency")
     DataSource: Union[str, None] = Field(..., alias="data_source")
-
-
 
 
 class Location(ORMBaseModel):

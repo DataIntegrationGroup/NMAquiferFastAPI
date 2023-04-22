@@ -81,4 +81,5 @@ def test_read_waterlevels_acoustic():
     response = client.get("/waterlevels/acoustic")
     assert response.status_code == 200
 
+
 # ============= EOF =============================================

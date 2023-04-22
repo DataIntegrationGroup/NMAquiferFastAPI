@@ -140,7 +140,6 @@ class WaterLevelsContinuous_Acoustic(Base, MeasurementMixin):
     DateMeasured = Column(DateTime)
 
 
-
 class WaterLevels(Base, MeasurementMixin):
     __tablename__ = "WaterLevels"
     OBJECTID = Column(Integer, primary_key=True)

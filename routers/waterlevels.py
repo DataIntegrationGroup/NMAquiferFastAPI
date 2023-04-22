@@ -20,11 +20,14 @@ from sqlalchemy.orm import Session
 
 import models
 from schemas import waterlevels
-from crud import read_waterlevels_manual_query, read_waterlevels_acoustic_query, \
-    read_waterlevels_pressure_query
+from crud import (
+    read_waterlevels_manual_query,
+    read_waterlevels_acoustic_query,
+    read_waterlevels_pressure_query,
+)
 from dependencies import get_db
 
-router = APIRouter(prefix='/waterlevels', tags=['waterlevels'])
+router = APIRouter(prefix="/waterlevels", tags=["waterlevels"])
 
 
 # ============= EOF =============================================
