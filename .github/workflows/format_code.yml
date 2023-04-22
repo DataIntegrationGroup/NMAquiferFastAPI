@@ -4,6 +4,7 @@ on:
     branches: [dev]
   push:
     branches: [dev]
+    
 jobs:
   flake8_py3:
     runs-on: ubuntu-latest
