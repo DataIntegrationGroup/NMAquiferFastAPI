@@ -46,8 +46,10 @@ def override_get_db():
 app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
+
 def test_read_locations():
     response = client.get("/locations")
     assert response.status_code == 200
+
 
 # ============= EOF =============================================

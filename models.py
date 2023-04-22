@@ -98,6 +98,7 @@ class MeasurementMixin(object):
     @declared_attr
     def MeasurementMethod(self):
         return Column(String(50), ForeignKey("LU_MeasurementMethod.Code"))
+
     @declared_attr
     def DataSource(self):
         return Column(String(50), ForeignKey("LU_DataSource.Code"))

@@ -19,7 +19,7 @@ PROJECTIONS = {}
 
 
 def utm_to_latlon(e, n, zone=12):
-    name = f'utm{zone}'
+    name = f"utm{zone}"
     if name not in PROJECTIONS:
         pr = pyproj.Proj(proj="utm", zone=int(zone), ellps="WGS84")
         PROJECTIONS[name] = pr
@@ -29,11 +29,13 @@ def utm_to_latlon(e, n, zone=12):
 
 
 def latlon_to_utm(lon, lat):
-    name = 'latlon'
+    name = "latlon"
     if name not in PROJECTIONS:
         pr = pyproj.Proj(proj="utm", ellps="WGS84")
         PROJECTIONS[name] = pr
 
     pr = PROJECTIONS[name]
     return pr(lon, lat)
+
+
 # ============= EOF =============================================
