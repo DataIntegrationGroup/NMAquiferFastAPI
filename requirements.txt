@@ -1,5 +1,6 @@
 fastapi
 fastapi_pagination
+fastapi_utils
 uvicorn
 sqlalchemy
 pymssql
@@ -7,4 +8,4 @@ requests
 jinja2
 plotly
 pandas
-strawberry-graphql[debug-server]
+pyproj

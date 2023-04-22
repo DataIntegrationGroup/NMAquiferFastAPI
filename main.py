@@ -25,6 +25,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
+from typing import List
 
 import models
 import schemas
@@ -137,7 +138,7 @@ def read_well(pointid: str = None, db: Session = Depends(get_db)):
     return q.first()
 
 
-@app.get("/pod", response_model=list[schemas.Well])
+@app.get("/pod", response_model=List[schemas.Well])
 def read_pods(pointid: str = None, db: Session = Depends(get_db)):
     return _read_pods(pointid, db)
 
