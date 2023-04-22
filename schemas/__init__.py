@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2023 Jake Ross
+# Copyright 2023 ross
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from datetime import date, time, datetime
-from typing import Optional, Union
+from typing import Union, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -24,6 +23,13 @@ class ORMBaseModel(BaseModel):
     class Config:
         orm_mode = True
         allow_population_by_field_name = True
+
+class Measurement(ORMBaseModel):
+    MeasurementMethod: Union[str, None] = Field(..., alias="measurement_method")
+    MeasuringAgency: Union[str, None] = Field(..., alias="measuring_agency")
+    DataSource: Union[str, None] = Field(..., alias="data_source")
+
+
 
 
 class Location(ORMBaseModel):
@@ -54,23 +60,6 @@ class Well(ORMBaseModel):
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
 
     pods: Optional[list] = None
-
-
-class Measurement(ORMBaseModel):
-    MeasurementMethod: Union[str, None] = Field(..., alias="measurement_method")
-    MeasuringAgency: Union[str, None] = Field(..., alias="measuring_agency")
-    DataSource: Union[str, None] = Field(..., alias="data_source")
-
-
-class WaterLevels(ORMBaseModel):
-    DepthToWaterBGS: Union[float, None] = Field(..., alias="depth_to_water_ftbgs")
-    DateMeasured: Union[date, None] = Field(..., alias="measurement_date")
-    TimeMeasured: Union[time, None] = Field(..., alias="measurement_time")
-
-
-class WaterLevelsContinuous_Pressure(Measurement):
-    DepthToWaterBGS: Union[float, None] = Field(..., alias="depth_to_water_ftbgs")
-    DateMeasured: Union[datetime, None] = Field(..., alias="measurement_datetime")
 
 
 # ============= EOF =============================================

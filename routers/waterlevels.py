@@ -19,38 +19,43 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
 
 import models
-import schemas
-from app import app
-from crud import _read_waterlevels_query, public_release_filter
+from schemas import waterlevels
+from crud import read_waterlevels_manual_query, read_waterlevels_acoustic_query, \
+    read_waterlevels_pressure_query
 from dependencies import get_db
 
-router = APIRouter()
+router = APIRouter(prefix='/waterlevels', tags=['waterlevels'])
 
 
 # ============= EOF =============================================
-@router.get("/waterlevels", response_model=Page[schemas.WaterLevels])
+@router.get("/manual", response_model=Page[waterlevels.WaterLevels])
 @router.get(
-    "/waterlevels/limit-offset", response_model=LimitOffsetPage[schemas.WaterLevels]
+    "/manual/limit-offset", response_model=LimitOffsetPage[waterlevels.WaterLevels]
 )
-def read_waterlevels(pointid: str = None, db: Session = Depends(get_db)):
-    q = _read_waterlevels_query(pointid, db)
+def read_waterlevels_manual(pointid: str = None, db: Session = Depends(get_db)):
+    q = read_waterlevels_manual_query(pointid, db)
     return paginate(q)
 
 
 @router.get(
-    "/waterlevels_pressure", response_model=Page[schemas.WaterLevelsContinuous_Pressure]
+    "/pressure", response_model=Page[waterlevels.WaterLevelsContinuous_Pressure]
 )
 @router.get(
-    "/waterlevels_pressure/limit-offset",
-    response_model=LimitOffsetPage[schemas.WaterLevelsContinuous_Pressure],
+    "/pressure/limit-offset",
+    response_model=LimitOffsetPage[waterlevels.WaterLevelsContinuous_Pressure],
 )
 def read_waterlevels_pressure(pointid: str = None, db: Session = Depends(get_db)):
-    q = db.query(models.WaterLevelsContinuous_Pressure)
-    if pointid:
-        q = q.join(models.Well)
-        q = q.join(models.Location)
-        q = q.filter(models.Location.PointID == pointid)
-    q = q.order_by(models.WaterLevelsContinuous_Pressure.OBJECTID)
-    q = public_release_filter(q)
+    q = read_waterlevels_pressure_query(pointid, db)
+    return paginate(q)
 
+
+@router.get(
+    "/acoustic", response_model=Page[waterlevels.WaterLevelsContinuous_Acoustic]
+)
+@router.get(
+    "/acoustic/limit-offset",
+    response_model=LimitOffsetPage[waterlevels.WaterLevelsContinuous_Acoustic],
+)
+def read_waterlevels_acoustic(pointid: str = None, db: Session = Depends(get_db)):
+    q = read_waterlevels_acoustic_query(pointid, db)
     return paginate(q)

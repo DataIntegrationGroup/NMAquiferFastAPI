@@ -128,10 +128,17 @@ class WaterLevelsContinuous_Pressure(Base, MeasurementMixin):
     DepthToWaterBGS = Column(Numeric)
 
     DateMeasured = Column(DateTime)
-    # MeasuringAgency = Column(String(50))
-    # MeasurementMethod = Column(String(50), ForeignKey('LU_MeasurementMethod.Code'))
-    # DataSource = Column(String(50), ForeignKey('LU_DataSource.Code'))
-    #
+
+
+class WaterLevelsContinuous_Acoustic(Base, MeasurementMixin):
+    __tablename__ = "WaterLevelsContinuous_Acoustic"
+    GlobalID = Column(GUID, primary_key=True)
+    OBJECTID = Column(Integer)
+    WellID = Column(GUID, ForeignKey("WellData.WellID"))
+    DepthToWaterBGS = Column(Numeric)
+
+    DateMeasured = Column(DateTime)
+
 
 
 class WaterLevels(Base, MeasurementMixin):

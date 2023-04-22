@@ -13,7 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from fastapi import APIRouter
+from typing import List
 
-router = APIRouter()
+from fastapi import APIRouter, Depends
+from starlette.responses import Response
+
+from dependencies import get_db
+from ngwmn import make_waterlevels, make_wellconstruction, make_lithology
+
+router = APIRouter(prefix='/ngwmn', tags=['ngwmn'])
+
+
+@router.get("/waterlevels/{pointid}")
+async def read_ngwmn_waterlevels(pointid: str, db=Depends(get_db)):
+    data = make_waterlevels(pointid, db)
+    return Response(content=data, media_type="application/xml")
+
+
+@router.get("/wellconstruction/{pointid}")
+async def read_ngwmn_wellconstruction(pointid: str, db=Depends(get_db)):
+    data = make_wellconstruction(pointid, db)
+    return Response(content=data, media_type="application/xml")
+
+
+@router.get("/lithology/{pointid}")
+async def read_ngwmn_lithology(pointid: str, db=Depends(get_db)):
+    data = make_lithology(pointid, db)
+    return Response(content=data, media_type="application/xml")
 # ============= EOF =============================================

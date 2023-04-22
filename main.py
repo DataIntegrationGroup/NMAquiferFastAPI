@@ -25,10 +25,10 @@ import models
 from app import app
 
 from crud import (
-    _read_waterlevels_query,
+    read_waterlevels_manual_query,
     public_release_filter,
     _read_pods,
-    _read_waterlevels_pressure_query,
+    read_waterlevels_pressure_query,
 )
 
 import plotly
@@ -58,13 +58,13 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
         pods = well.pods
 
     fig = go.Figure()
-    manual_waterlevels = _read_waterlevels_query(pointid, db).all()
+    manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
     mxs = [w.DateMeasured for w in manual_waterlevels]
     mys = [w.DepthToWaterBGS for w in manual_waterlevels]
 
     fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual Water Levels"))
 
-    pressure_waterlevels = _read_waterlevels_pressure_query(
+    pressure_waterlevels = read_waterlevels_pressure_query(
         pointid, db, as_dict=True
     ).all()
     pxs = [w.DateMeasured for w in pressure_waterlevels]

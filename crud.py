@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 import models
+import requests
 
 
 def public_release_filter(q):
@@ -22,8 +23,21 @@ def public_release_filter(q):
 
 # readers
 
+def read_waterlevels_acoustic_query(pointid, db, as_dict=False):
+    if as_dict:
+        q = db.query(models.WaterLevelsContinuous_Acoustic.__table__)
+    else:
+        q = db.query(models.WaterLevelsContinuous_Acoustic)
 
-def _read_waterlevels_pressure_query(pointid, db, as_dict=False):
+    if pointid:
+        q = q.join(models.Well)
+        q = q.join(models.Location)
+        q = q.filter(models.Location.PointID == pointid)
+    q = q.order_by(models.WaterLevelsContinuous_Acoustic.DateMeasured)
+    q = public_release_filter(q)
+    return q
+
+def read_waterlevels_pressure_query(pointid, db, as_dict=False):
     if as_dict:
         q = db.query(models.WaterLevelsContinuous_Pressure.__table__)
     else:
@@ -38,7 +52,7 @@ def _read_waterlevels_pressure_query(pointid, db, as_dict=False):
     return q
 
 
-def _read_waterlevels_query(pointid, db, as_dict=False):
+def read_waterlevels_manual_query(pointid, db, as_dict=False):
     if as_dict:
         q = db.query(models.WaterLevels.__table__)
     else:

@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-
-
 from fastapi.testclient import TestClient
-from main import app
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -70,5 +66,19 @@ def test_read_pod():
     response = client.get("/pod")
     assert response.status_code == 200
 
+
+def test_read_waterlevels_manual():
+    response = client.get("/waterlevels/manual")
+    assert response.status_code == 200
+
+
+def test_read_waterlevels_pressure():
+    response = client.get("/waterlevels/pressure")
+    assert response.status_code == 200
+
+
+def test_read_waterlevels_acoustic():
+    response = client.get("/waterlevels/acoustic")
+    assert response.status_code == 200
 
 # ============= EOF =============================================

@@ -11,8 +11,6 @@
             crossorigin="anonymous"></script>
 
     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-
-
 </head>
 
 <body>
@@ -32,6 +30,11 @@
     var graphs = {{ graphJSON | safe }}
     Plotly.plot('chart',graphs,{});
 </script>
+<h1>API call</h1>
+<pre>
+    https://amp.nmbgmr.nmt.edu
+</pre>
+
 
 <hr>
 <h1>{{well.OSEWellID}}</h1>
@@ -49,4 +52,28 @@
 {% endfor %}
 
 </body>
+
+<footer>
+    <bold>Disclaimer:</bold><br/>
+    <p>
+        At NMBGMR, we use different tools to collect groundwater level measurements,
+        including continuous data recorders and manual measurements. All data provided here are in feet,
+        depth to water, below ground surface (BGS). We use pressure transducers to record pressure of water over a
+        device installed in the well, which is converted to feet of water and depth to water. We provide here up to
+        one measurement per hour where the data are that frequent. In some locations we have more data available.
+        We also use continuous acoustic sounder devices which convert a sound reflection into a measurement of depth
+        to water. These can be used for long term trends in groundwater levels. While we do our best to review and
+        quality check these data, please use these data with caution. Site-specific conditions should be verified,
+        especially for legally binding decisions. Data are subject to changes, deletion, or being moved without
+        notice at any time and should not be relied on for any critical application. Any opinions expressed may not
+        necessarily reflect the official position of the New Mexico Bureau of Geology, New Mexico Tech, or the State of
+        New Mexico. No warranty expressed or implied, is made regarding the accuracy or utility of the data for general
+        or scientific purposes.
+    </p>
+    <p>
+        For more information on this project contact: <a href="mailto: stacy.timmons@nmt.edu">Stacy Timmons</a>
+    </p>
+
+</footer>
+
 </html>
