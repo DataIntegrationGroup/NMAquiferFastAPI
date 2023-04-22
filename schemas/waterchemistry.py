@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2023 Jake Ross
+# Copyright 2023 ross
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,28 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from fastapi import FastAPI
-
-app = FastAPI(
-    title="NMAquiferAPI",
-    description="""This is a REST API for the New Mexico Aquifer Mapping Programs database. 
-    It provides access water levels and water chemistry data for groundwater and surface water in New Mexico.""",
-    version="0.0.1",
-    terms_of_service="http://example.com/terms/",
-    contact={
-        "name": "Stacy Timmons",
-        "url": "http://geoinfo.nmt.edu",
-        "email": "stacy.timmons@nmt.edu",
-    },
-    license_info={
-        "name": "Apache 2.0",
-        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
-    },
-)
+from pydantic import BaseModel
 
 
-# from graphql_app import graphql_app
-# app.add_route("/graphql", graphql_app)
-# app.add_websocket_route("/graphql", graphql_app)
+class Analyte(BaseModel):
+    pass
+
 
 # ============= EOF =============================================

@@ -17,7 +17,11 @@ def make_xml():
     pass
 
 
-def make_site_metadata():
+def make_lithology():
+    pass
+
+
+def make_wellconstruction():
     pass
 
 
