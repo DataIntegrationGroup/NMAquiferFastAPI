@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from numbers import Real
-
-import pyproj
 from sqlalchemy import (
     Column,
     Integer,
@@ -38,15 +35,26 @@ class Location(Base):
     __tablename__ = "Location"
     LocationId = Column(GUID, primary_key=True)
     PointID = Column(String(50))
+    AlternateSiteID = Column(String(50))
+
     PublicRelease = Column(Boolean)
     Easting = Column(Integer)
     Northing = Column(Integer)
+    Altitude = Column(Float)
+    AltitudeMethod = Column(String(50))
 
     @property
     def geometry(self):
         e, n = self.Easting, self.Northing
         lon, lat = utm_to_latlon(e, n)
-        return {"coordinates": [lon, lat], "type": "Point"}
+
+        elevation = self.Altitude
+        # altitude is in ft above sea level geojson wants meters
+        if elevation is not None:
+            # convert feet to meters
+            elevation *= 0.3048
+
+        return {"coordinates": [lon, lat, elevation], "type": "Point"}
 
 
 class LU_Mixin(object):

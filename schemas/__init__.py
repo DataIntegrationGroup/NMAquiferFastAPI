@@ -29,13 +29,18 @@ class Measurement(ORMBaseModel):
     MeasurementMethod: Union[str, None] = Field(..., alias="measurement_method")
     MeasuringAgency: Union[str, None] = Field(..., alias="measuring_agency")
     DataSource: Union[str, None] = Field(..., alias="data_source")
+    DataQuality: Union[str, None] = Field(..., alias="data_quality")
 
 
 class Location(ORMBaseModel):
     LocationId: UUID
     PointID: str
     PublicRelease: bool
+    AlternateSiteID: Union[str, None] = Field(..., alias="alternate_site_id")
+    AltitudeMethod: Union[str, None] = Field(..., alias="elevation_method")
+
     geometry: Optional[dict] = None
+
 
 
 class Well(ORMBaseModel):
