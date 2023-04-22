@@ -18,9 +18,8 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-from graphql_app import graphql_app
-
-app.add_route("/graphql", graphql_app)
-app.add_websocket_route("/graphql", graphql_app)
+# from graphql_app import graphql_app
+# app.add_route("/graphql", graphql_app)
+# app.add_websocket_route("/graphql", graphql_app)
 
 # ============= EOF =============================================
