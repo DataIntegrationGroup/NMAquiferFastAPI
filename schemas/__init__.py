@@ -42,7 +42,6 @@ class Location(ORMBaseModel):
     geometry: Optional[dict] = None
 
 
-
 class Well(ORMBaseModel):
     LocationId: UUID
     WellID: UUID
