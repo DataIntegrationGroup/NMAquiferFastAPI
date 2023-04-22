@@ -31,7 +31,6 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-
 Base.metadata.create_all(bind=engine)
 
 
@@ -51,5 +50,24 @@ def test_read_locations():
     response = client.get("/locations")
     assert response.status_code == 200
 
+
+def test_read_location_pointid():
+    response = client.get("/location/pointid/MG-030")
+    assert response.status_code == 200
+
+
+def test_read_location_view():
+    response = client.get("/location/view/MG-030")
+    assert response.status_code == 200
+
+
+def test_well():
+    response = client.get("/well")
+    assert response.status_code == 200
+
+
+def test_read_pod():
+    response = client.get("/pod")
+    assert response.status_code == 200
 
 # ============= EOF =============================================
