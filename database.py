@@ -22,10 +22,10 @@ from sqlalchemy.orm import sessionmaker
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
-user = os.environ.get('DB_USER')
-password = os.environ.get('DB_PASSWORD')
-host = os.environ.get('DB_HOST')
-database = os.environ.get('DB_NAME')
+user = os.environ.get("DB_USER")
+password = os.environ.get("DB_PASSWORD")
+host = os.environ.get("DB_HOST")
+database = os.environ.get("DB_NAME")
 
 SQLALCHEMY_DATABASE_URL = f"mssql+pymssql://{user}:{password}@{host}/{database}"
 

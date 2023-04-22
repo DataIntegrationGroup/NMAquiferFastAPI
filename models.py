@@ -15,19 +15,28 @@
 # ===============================================================================
 from numbers import Real
 
-import pyproj as pyproj
-from sqlalchemy import Column, Integer, UUID, String, Boolean, ForeignKey, Float, Numeric, Date, Time, DateTime
+import pyproj
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Boolean,
+    ForeignKey,
+    Float,
+    Numeric,
+    Date,
+    Time,
+    DateTime,
+)
 from sqlalchemy.orm import relationship, declared_attr
-
+from fastapi_utils.guid_type import GUID
 from database import Base
-
-zone = 12
-PROJECTION = pyproj.Proj(proj="utm", zone=int(zone), ellps='WGS84')
+from geo_utils import utm_to_latlon
 
 
 class Location(Base):
-    __tablename__ = 'Location'
-    LocationId = Column(UUID, primary_key=True)
+    __tablename__ = "Location"
+    LocationId = Column(GUID, primary_key=True)
     PointID = Column(String(50))
     PublicRelease = Column(Boolean)
     Easting = Column(Integer)
@@ -36,9 +45,8 @@ class Location(Base):
     @property
     def geometry(self):
         e, n = self.Easting, self.Northing
-        lon, lat = PROJECTION(e, n, inverse=True)
-        return {'coordinates': [lon, lat],
-                'type': 'Point'}
+        lon, lat = utm_to_latlon(e, n)
+        return {"coordinates": [lon, lat], "type": "Point"}
 
 
 class LU_Mixin(object):
@@ -47,21 +55,21 @@ class LU_Mixin(object):
 
 
 class LU_Formations(Base, LU_Mixin):
-    __tablename__ = 'LU_Formations'
+    __tablename__ = "LU_Formations"
 
 
 class LU_MeasurementMethod(Base, LU_Mixin):
-    __tablename__ = 'LU_MeasurementMethod'
+    __tablename__ = "LU_MeasurementMethod"
 
 
 class LU_DataSource(Base, LU_Mixin):
-    __tablename__ = 'LU_DataSource'
+    __tablename__ = "LU_DataSource"
 
 
 class Well(Base):
-    __tablename__ = 'WellData'
-    LocationId = Column(UUID, ForeignKey('Location.LocationId'))
-    WellID = Column(UUID, primary_key=True)
+    __tablename__ = "WellData"
+    LocationId = Column(GUID, ForeignKey("Location.LocationId"))
+    WellID = Column(GUID, primary_key=True)
     PointID = Column(String(50))
     HoleDepth = Column(Integer)
     WellDepth = Column(Integer)
@@ -72,12 +80,12 @@ class Well(Base):
     CasingDiameter = Column(Numeric)
     CasingDepth = Column(Numeric)
     CasingDescription = Column(String(50))
-    FormationZone = Column(String(50), ForeignKey('LU_Formations.Code'))
+    FormationZone = Column(String(50), ForeignKey("LU_Formations.Code"))
     StaticWater = Column(Numeric)
 
-    lu_formation = relationship('LU_Formations', backref='wells', uselist=False)
-    location = relationship('Location', backref='well', uselist=False)
-    waterlevels = relationship('WaterLevels', backref='well', uselist=False)
+    lu_formation = relationship("LU_Formations", backref="wells", uselist=False)
+    location = relationship("Location", backref="well", uselist=False)
+    waterlevels = relationship("WaterLevels", backref="well", uselist=False)
 
     @property
     def formation(self):
@@ -85,17 +93,23 @@ class Well(Base):
 
 
 class MeasurementMixin(object):
-    MeasurementMethod = Column(String(50), ForeignKey('LU_MeasurementMethod.Code'))
     MeasuringAgency = Column(String(50))
-    DataSource = Column(String(50), ForeignKey('LU_DataSource.Code'))
+
+    @declared_attr
+    def MeasurementMethod(self):
+        return Column(String(50), ForeignKey("LU_MeasurementMethod.Code"))
+
+    @declared_attr
+    def DataSource(self):
+        return Column(String(50), ForeignKey("LU_DataSource.Code"))
 
     @declared_attr
     def lu_measurement_method(cls):
-        return relationship('LU_MeasurementMethod', uselist=False)
+        return relationship("LU_MeasurementMethod", uselist=False)
 
     @declared_attr
     def lu_data_source(cls):
-        return relationship('LU_DataSource', uselist=False)
+        return relationship("LU_DataSource", uselist=False)
 
     @property
     def measurement_method(self):
@@ -107,10 +121,10 @@ class MeasurementMixin(object):
 
 
 class WaterLevelsContinuous_Pressure(Base, MeasurementMixin):
-    __tablename__ = 'WaterLevelsContinuous_Pressure'
-    GlobalID = Column(UUID, primary_key=True)
+    __tablename__ = "WaterLevelsContinuous_Pressure"
+    GlobalID = Column(GUID, primary_key=True)
     OBJECTID = Column(Integer)
-    WellID = Column(UUID, ForeignKey('WellData.WellID'))
+    WellID = Column(GUID, ForeignKey("WellData.WellID"))
     DepthToWaterBGS = Column(Numeric)
 
     DateMeasured = Column(DateTime)
@@ -121,13 +135,14 @@ class WaterLevelsContinuous_Pressure(Base, MeasurementMixin):
 
 
 class WaterLevels(Base, MeasurementMixin):
-    __tablename__ = 'WaterLevels'
+    __tablename__ = "WaterLevels"
     OBJECTID = Column(Integer, primary_key=True)
-    WellID = Column(UUID, ForeignKey('WellData.WellID'), primary_key=True)
+    WellID = Column(GUID, ForeignKey("WellData.WellID"), primary_key=True)
     DepthToWaterBGS = Column(Numeric)
     DateMeasured = Column(Date)
     TimeMeasured = Column(Time)
 
     PublicRelease = Column(Boolean)
+
 
 # ============= EOF =============================================

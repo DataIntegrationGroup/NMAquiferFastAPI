@@ -1,15 +1,16 @@
 name: Format code
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [dev]
   push:
-    branches: [main, dev]
+    branches: [dev]
+    
 jobs:
   flake8_py3:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
       - name: Set up Python environment
         uses: actions/setup-python@v1
         with:
