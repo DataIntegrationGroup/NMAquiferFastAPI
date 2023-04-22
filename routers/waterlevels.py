@@ -26,6 +26,7 @@ from dependencies import get_db
 
 router = APIRouter()
 
+
 # ============= EOF =============================================
 @router.get("/waterlevels", response_model=Page[schemas.WaterLevels])
 @router.get(

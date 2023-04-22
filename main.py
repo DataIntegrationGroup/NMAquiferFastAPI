@@ -31,7 +31,12 @@ from typing import List
 import models
 import schemas
 from app import app
-from crud import _read_waterlevels_query, public_release_filter, _read_pods, _read_waterlevels_pressure_query
+from crud import (
+    _read_waterlevels_query,
+    public_release_filter,
+    _read_pods,
+    _read_waterlevels_pressure_query,
+)
 from crud import (
     _read_waterlevels_query,
     public_release_filter,
@@ -45,6 +50,7 @@ from dependencies import get_db
 from routers import locations, wells, waterlevels
 
 templates = Jinja2Templates(directory="templates")
+
 
 # ===============================================================================
 # views

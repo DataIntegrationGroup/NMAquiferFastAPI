@@ -27,6 +27,7 @@ from dependencies import get_db
 
 router = APIRouter()
 
+
 @router.get("/well", response_model=schemas.Well)
 def read_well(pointid: str = None, db: Session = Depends(get_db)):
     q = db.query(models.Well)
@@ -46,4 +47,6 @@ def read_pods(pointid: str = None, db: Session = Depends(get_db)):
     if pods is None:
         pods = Response(status_code=HTTP_200_OK)
     return pods
+
+
 # ============= EOF =============================================

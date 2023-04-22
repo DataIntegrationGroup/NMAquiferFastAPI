@@ -16,7 +16,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from fastapi_pagination import  LimitOffsetPage, Page
+from fastapi_pagination import LimitOffsetPage, Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 
 from sqlalchemy.orm import Session
@@ -36,7 +36,7 @@ router = APIRouter()
 def read_locations(pointid: str = None, db: Session = Depends(get_db)):
     q = db.query(models.Location)
     if pointid:
-        q = q.filter(models.Location.PointID.like(f'%{pointid}%'))
+        q = q.filter(models.Location.PointID.like(f"%{pointid}%"))
 
     q = q.order_by(models.Location.LocationId)
     q = public_release_filter(q)
@@ -62,5 +62,6 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
         loc = Response(status_code=HTTP_200_OK)
 
     return loc
+
 
 # ============= EOF =============================================
