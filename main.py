@@ -102,29 +102,33 @@ def map_locations(db: Session = Depends(get_db)):
     locations = q.all()
 
     def togeojson(l):
-        return {"type": "Feature",
-                "properties": {"name": l.PointID},
-                "geometry": l.geometry,
-                }
+        return {
+            "type": "Feature",
+            "properties": {"name": l.PointID},
+            "geometry": l.geometry,
+        }
 
-    content = {'type': 'FeatureCollection',
-               'features': [togeojson(l) for l in locations]}
+    content = {
+        "type": "FeatureCollection",
+        "features": [togeojson(l) for l in locations],
+    }
 
     content = jsonable_encoder(content)
     return JSONResponse(content=content)
 
 
-@app.get('/map', response_class=HTMLResponse)
+@app.get("/map", response_class=HTMLResponse)
 def map_view(request: Request, db: Session = Depends(get_db)):
     # q = db.query(models.Location.__table__)
     # q = public_release_filter(q)
     # locations = q.all()
 
     def make_point(i):
-        return {"type": "Feature",
-                "properties": {"name": f"Point {i}"},
-                "geometry": {"type": "Point",
-                             "coordinates": [-106 + i, 34.5 + i]}}
+        return {
+            "type": "Feature",
+            "properties": {"name": f"Point {i}"},
+            "geometry": {"type": "Point", "coordinates": [-106 + i, 34.5 + i]},
+        }
 
     return templates.TemplateResponse(
         "map_view.html",
@@ -132,8 +136,10 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 7,
-            "points": {'type': 'FeatureCollection',
-                       'features': [make_point(i) for i in range(10)], }
+            "points": {
+                "type": "FeatureCollection",
+                "features": [make_point(i) for i in range(10)],
+            }
             # "points": {
             #     'type': 'FeatureCollection',
             #     'features': [
@@ -142,7 +148,7 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             #      for i in range(10)
             #      ]
             # }
-        }
+        },
     )
 
 
