@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/deck.gl@8.8.23/dist.min.js"></script>
+    <script src="https://unpkg.com/@deck.gl/carto@8.8.23/dist.min.js"></script>
+
+    <script src="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js"></script>
+    <link
+            href="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css"
+            rel="stylesheet"
+    />
+</head>
+
+<body style="margin: 0; padding: 0;">
+
+<div id="map" style="width: 100vw; height: 100vh;"></div>
+
+</body>
+
+
+<script type="text/javascript">
+
+    const {GeoJsonLayer} = deck;
+    deck.carto.setDefaultCredentials({
+        apiBaseUrl: "https://gcp-us-east1.api.carto.com",
+        accessToken:
+            "eyJhbGciOiJIUzI1NiJ9.eyJhIjoiYWNfbHFlM3p3Z3UiLCJqdGkiOiI1YjI0OWE2ZCJ9.Y7zB30NJFzq5fPv8W5nkoH5lPXFWQP0uywDtqUg8y8c"
+    });
+    console.log({{ points|tojson }})
+
+    const geolayer = new GeoJsonLayer({
+        id: "geojson-layer",
+        data: {{ points|tojson }},
+        stroked: true,
+        filled: true,
+        extruded: true,
+        {#lineWidthMinPixels: 2,#}
+        getLineColor: [255, 255, 255],
+        getFillColor: [200, 160, 0, 180],
+        getPointRadius: 10,
+
+        getLineWidth: 1,
+        getText: f => f.properties.name,
+        getTextSize: 12,
+        {#getElevation: 30,#}
+        pointType: "circle+text",
+        pointRadiusUnits: "pixels"
+    });
+
+
+    const deckgl = new deck.DeckGL({
+        container: "map",
+        map: maplibregl,
+        // CARTO's provides three basemaps voyager, positron, dark-matter
+        {#mapStyle: deck.carto.BASEMAP.VOYAGER,#}
+        mapStyle: deck.carto.BASEMAP.POSITRON,
+        {#mapStyle: deck.carto.BASEMAP.DARK_MATTER,#}
+
+        initialViewState: {
+            latitude: {{ center.lat }},
+            longitude: {{ center.lon }},
+            zoom: {{ zoom }}
+        },
+        controller: true,
+        layers: [geolayer]
+
+    });
+</script>
+
+
+</html>
