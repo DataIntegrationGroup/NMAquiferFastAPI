@@ -16,12 +16,20 @@
 <body>
 <h1>{{ location.PointID }}</h1>
 <table class="table table-sm">
-    {% for key, value in location.items() %}
-        <tr>
-            <td>{{ key }}</td>
-            <td>{{ value }}</td>
-        </tr>
-    {% endfor %}
+
+    <tr>
+        <td>AlternateSiteID</td>
+        <td>{{ location.AlternateSiteID }}</td>
+    </tr>
+    <tr>
+        <td>Elevation</td>
+        <td>{{ location.geometry.coordinates[2]|round(2)}}</td>
+    </tr>
+        <td>Formation</td>
+        <td>{{ well.formation }}</td>
+    <tr>
+
+    </tr>
 </table>
 
 <hr>
