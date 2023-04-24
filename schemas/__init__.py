@@ -37,7 +37,7 @@ class Location(ORMBaseModel):
     PointID: str
     PublicRelease: bool
     AlternateSiteID: Union[str, None] = Field(..., alias="alternate_site_id")
-    AltitudeMethod: Union[str, None] = Field(..., alias="elevation_method")
+    elevation_method: Union[str, None] #= Field(..., alias="elevation_method")
 
     geometry: Optional[dict] = None
 

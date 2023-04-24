@@ -41,7 +41,13 @@ class Location(Base):
     Easting = Column(Integer)
     Northing = Column(Integer)
     Altitude = Column(Float)
-    AltitudeMethod = Column(String(50))
+    AltitudeMethod = Column(String(50), ForeignKey("LU_AltitudeMethod.Code"))
+
+    lu_elevation_method = relationship("LU_AltitudeMethod", uselist=False)
+
+    @property
+    def elevation_method(self):
+        return self.lu_elevation_method.Meaning
 
     @property
     def geometry(self):
@@ -72,6 +78,10 @@ class LU_MeasurementMethod(Base, LU_Mixin):
 
 class LU_DataSource(Base, LU_Mixin):
     __tablename__ = "LU_DataSource"
+
+
+class LU_AltitudeMethod(Base, LU_Mixin):
+    __tablename__ = "LU_AltitudeMethod"
 
 
 class Well(Base):
