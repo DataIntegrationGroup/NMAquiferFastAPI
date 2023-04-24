@@ -22,6 +22,7 @@ from fastapi_pagination import add_pagination
 from sqlalchemy.orm import Session
 
 import models
+import schemas
 from app import app
 
 from crud import (
@@ -45,10 +46,12 @@ templates = Jinja2Templates(directory="templates")
 # views
 @app.get("/location/view/{pointid}", response_class=HTMLResponse)
 def location_view(request: Request, pointid: str, db: Session = Depends(get_db)):
-    q = db.query(models.Location.__table__)
+    q = db.query(models.Location)
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     loc = q.first()
+    loc = schemas.Location.from_orm(loc)
+
     wells = _read_pods(pointid, db)
 
     well = None
@@ -83,7 +86,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
         "location_view.html",
         {
             "request": request,
-            "location": loc._mapping if loc else {},
+            "location": loc.dict() if loc else {},
             "well": well,
             "pods": pods,
             "graphJSON": graphJSON,
