@@ -72,7 +72,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(Path(BASE_DIR, 'templates')))
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 
 @app.get("/map", response_class=HTMLResponse)
