@@ -30,7 +30,7 @@
         });
 
     map.on('load',  () => {map.addSource('wells', {type: 'geojson',
-        data: 'http://localhost:8000/locations/geojson'});
+        data: '/locations/geojson'});
 
     map.addLayer({
         id: 'wells',
