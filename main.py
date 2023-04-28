@@ -30,6 +30,7 @@ from crud import (
     public_release_filter,
     _read_pods,
     read_waterlevels_pressure_query,
+    read_locations,
 )
 
 import plotly
@@ -39,85 +40,38 @@ from dependencies import get_db
 from routers import locations, wells, waterlevels, ngwmn
 from starlette.templating import Jinja2Templates
 
-templates = Jinja2Templates(directory="templates")
-
 
 # ===============================================================================
 # views
-@app.get("/location/view/{pointid}", response_class=HTMLResponse)
-def location_view(request: Request, pointid: str, db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
-    loc = q.first()
-    loc = schemas.Location.from_orm(loc)
-
-    wells = _read_pods(pointid, db)
-
-    well = None
-    pods = []
-    if wells:
-        well = wells[0]
-        pods = well.pods
-
-    fig = go.Figure()
-    manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
-    mxs = [w.DateMeasured for w in manual_waterlevels]
-    mys = [w.DepthToWaterBGS for w in manual_waterlevels]
-
-    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual Water Levels"))
-
-    pressure_waterlevels = read_waterlevels_pressure_query(
-        pointid, db, as_dict=True
-    ).all()
-    pxs = [w.DateMeasured for w in pressure_waterlevels]
-    pys = [w.DepthToWaterBGS for w in pressure_waterlevels]
-    fig.add_trace(
-        go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous Water Levels")
-    )
-
-    fig.update_layout(
-        xaxis={"title": "Date Measured"},
-        yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
-    )
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
-    return templates.TemplateResponse(
-        "location_view.html",
-        {
-            "request": request,
-            "location": loc.dict() if loc else {},
-            "well": well,
-            "pods": pods,
-            "graphJSON": graphJSON,
-        },
-    )
 
 
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
+#
+# @app.get("/map/locations")
+# def map_locations(db: Session = Depends(get_db)):
+#     q = db.query(models.Location)
+#     q = public_release_filter(q)
+#     locations = q.all()
+#
+#     def togeojson(l):
+#         return {
+#             "type": "Feature",
+#             "properties": {"name": l.PointID},
+#             "geometry": l.geometry,
+#         }
+#
+#     content = {
+#         "type": "FeatureCollection",
+#         "features": [togeojson(l) for l in locations],
+#     }
+#
+#     content = jsonable_encoder(content)
+#     return JSONResponse(content=content)
 
-@app.get("/map/locations")
-def map_locations(db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = public_release_filter(q)
-    locations = q.all()
 
-    def togeojson(l):
-        return {
-            "type": "Feature",
-            "properties": {"name": l.PointID},
-            "geometry": l.geometry,
-        }
-
-    content = {
-        "type": "FeatureCollection",
-        "features": [togeojson(l) for l in locations],
-    }
-
-    content = jsonable_encoder(content)
-    return JSONResponse(content=content)
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/map", response_class=HTMLResponse)
@@ -125,12 +79,13 @@ def map_view(request: Request, db: Session = Depends(get_db)):
     # q = db.query(models.Location.__table__)
     # q = public_release_filter(q)
     # locations = q.all()
+    locations = read_locations(db)
 
     def make_point(i):
         return {
             "type": "Feature",
-            "properties": {"name": f"Point {i}"},
-            "geometry": {"type": "Point", "coordinates": [-106 + i, 34.5 + i]},
+            "properties": {"name": f"Point {i.PointID}"},
+            "geometry": i.geometry,
         }
 
     return templates.TemplateResponse(
@@ -141,7 +96,7 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             "zoom": 7,
             "points": {
                 "type": "FeatureCollection",
-                "features": [make_point(i) for i in range(10)],
+                "features": [make_point(i) for i in locations],
             }
             # "points": {
             #     'type': 'FeatureCollection',

@@ -51,9 +51,7 @@ class Location(Base):
 
     @property
     def geometry(self):
-        e, n = self.Easting, self.Northing
-        lon, lat = utm_to_latlon(e, n)
-
+        lon, lat = self.lonlat
         elevation = self.Altitude
         # altitude is in ft above sea level geojson wants meters
         if elevation is not None:
@@ -61,6 +59,67 @@ class Location(Base):
             elevation *= 0.3048
 
         return {"coordinates": [lon, lat, elevation], "type": "Point"}
+
+    _lonlat = None
+
+    @property
+    def lonlat(self):
+        if self._lonlat is None:
+            e, n = self.Easting, self.Northing
+            lon, lat = utm_to_latlon(e, n)
+            self._lonlat = lon, lat
+        else:
+            lon, lat = self._lonlat
+
+        return lon, lat
+
+    @property
+    def geosparql_has_geometry(self):
+        lon, lat = self.lonlat
+        return {
+            "@type": "http://www.opengis.net/ont/sf#Point",
+            "geosparql:asWKT": f"POINT({lon}, {lat})",
+        }
+
+    @property
+    def schema_geo(self):
+        lon, lat = self.lonlat
+        return {
+            "@type": "schema:GeoCoordinates",
+            "schema:latitude": lon,
+            "schema:longitude": lat,
+        }
+
+    @property
+    def links(self):
+        return [
+            {
+                "rel": "self",
+                "href": str(self.request_url),
+                "type": "application/ld+json",
+                "title": "This document as RDF (JSON-LD)",
+            },
+            {
+                "rel": "alternate",
+                "href": f"{self.request_base_url}location/pointid/{self.PointID}",
+                "type": "application/json",
+                "title": "This document as JSON",
+            },
+            {
+                "rel": "alternate",
+                "href": f"{self.request_base_url}location/pointid/{self.PointID}/geojson",
+                "type": "application/geo+json",
+                "title": "This document as GeoJSON",
+            },
+        ]
+
+    @property
+    def properties(self):
+        return {
+            "point_id": self.PointID,
+            "alternate_name": self.AlternateSiteID,
+            "elevation_method": self.elevation_method,
+        }
 
 
 class LU_Mixin(object):

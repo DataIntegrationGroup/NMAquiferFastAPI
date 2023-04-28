@@ -37,13 +37,14 @@
         {#lineWidthMinPixels: 2,#}
         getLineColor: [255, 255, 255],
         getFillColor: [200, 160, 0, 180],
-        getPointRadius: 10,
+        getPointRadius: 5,
 
         getLineWidth: 1,
         getText: f => f.properties.name,
         getTextSize: 12,
         {#getElevation: 30,#}
-        pointType: "circle+text",
+        {#pointType: "circle+text",#}
+        pointType: "circle",
         pointRadiusUnits: "pixels"
     });
 
