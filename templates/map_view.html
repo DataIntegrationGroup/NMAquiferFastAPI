@@ -1,72 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://unpkg.com/deck.gl@8.8.23/dist.min.js"></script>
-    <script src="https://unpkg.com/@deck.gl/carto@8.8.23/dist.min.js"></script>
-
-    <script src="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.js"></script>
-    <link
-            href="https://unpkg.com/maplibre-gl@2.1.9/dist/maplibre-gl.css"
-            rel="stylesheet"
-    />
+    <meta charset="utf-8">
+    <title>Display a map on a webpage</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
 </head>
 
-<body style="margin: 0; padding: 0;">
+<body>
 
-<div id="map" style="width: 100vw; height: 100vh;"></div>
+    <div id="map"></div>
 
-</body>
+    <script>
+        // TO MAKE THE MAP APPEAR YOU MUST
+        // ADD YOUR ACCESS TOKEN FROM
+        // https://account.mapbox.com
+        mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';
+        const map = new mapboxgl.Map({
+            container: 'map', // container ID
+    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+            style: 'mapbox://styles/mapbox/streets-v12', // style URL
+            center: [-106.5, 35], // starting position [lng, lat]
+            zoom: 7 // starting zoom
+        });
 
+    map.on('load',  () => {map.addSource('wells', {type: 'geojson',
+        data: 'http://localhost:8000/locations/geojson'});
 
-<script type="text/javascript">
-
-    const {GeoJsonLayer} = deck;
-    deck.carto.setDefaultCredentials({
-        apiBaseUrl: "https://gcp-us-east1.api.carto.com",
-        accessToken:
-            "eyJhbGciOiJIUzI1NiJ9.eyJhIjoiYWNfbHFlM3p3Z3UiLCJqdGkiOiI1YjI0OWE2ZCJ9.Y7zB30NJFzq5fPv8W5nkoH5lPXFWQP0uywDtqUg8y8c"
+    map.addLayer({
+        id: 'wells',
+        type: 'circle',
+        source: 'wells',
+        paint: {
+            'circle-radius': 6,
+            'circle-color': '#B42222'
+        }
     });
-    console.log({{ points|tojson }})
-
-    const geolayer = new GeoJsonLayer({
-        id: "geojson-layer",
-        data: {{ points|tojson }},
-        stroked: true,
-        filled: true,
-        extruded: true,
-        {#lineWidthMinPixels: 2,#}
-        getLineColor: [255, 255, 255],
-        getFillColor: [200, 160, 0, 180],
-        getPointRadius: 5,
-
-        getLineWidth: 1,
-        getText: f => f.properties.name,
-        getTextSize: 12,
-        {#getElevation: 30,#}
-        {#pointType: "circle+text",#}
-        pointType: "circle",
-        pointRadiusUnits: "pixels"
     });
 
+    </script>
 
-    const deckgl = new deck.DeckGL({
-        container: "map",
-        map: maplibregl,
-        // CARTO's provides three basemaps voyager, positron, dark-matter
-        {#mapStyle: deck.carto.BASEMAP.VOYAGER,#}
-        mapStyle: deck.carto.BASEMAP.POSITRON,
-        {#mapStyle: deck.carto.BASEMAP.DARK_MATTER,#}
-
-        initialViewState: {
-            latitude: {{ center.lat }},
-            longitude: {{ center.lon }},
-            zoom: {{ zoom }}
-        },
-        controller: true,
-        layers: [geolayer]
-
-    });
-</script>
-
-
+    </body>
 </html>

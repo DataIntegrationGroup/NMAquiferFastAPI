@@ -75,6 +75,11 @@ class LocationGeoJSON(ORMBaseModel):
     geometry: dict = Field(..., alias="geometry")
 
 
+class LocationFeatureCollection(BaseModel):
+    type: str = "FeatureCollection"
+    features: list = Field(..., alias="features")
+
+
 class Well(ORMBaseModel):
     LocationId: UUID
     WellID: UUID

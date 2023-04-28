@@ -42,7 +42,7 @@ import plotly.graph_objects as go
 router = APIRouter(prefix="/locations", tags=["locations"])
 
 
-@router.get("/geojson", response_model=list[schemas.LocationGeoJSON])
+@router.get("/geojson", response_model=schemas.LocationFeatureCollection)
 def read_locations_geojson(db: Session = Depends(get_db)):
     q = db.query(models.Location)
     q = public_release_filter(q)
@@ -55,14 +55,10 @@ def read_locations_geojson(db: Session = Depends(get_db)):
             "geometry": l.geometry,
         }
 
-    # content = {
-    #     "type": "FeatureCollection",
-    #     "features": [togeojson(l) for l in locations],
-    # }
-
-    # content = jsonable_encoder(content)
-    # return JSONResponse(content=content)
-    return [togeojson(l) for l in locations]
+    content = {
+        "features": [togeojson(l) for l in locations],
+    }
+    return content
 
 
 @router.get("", response_model=Page[schemas.Location])
@@ -135,7 +131,12 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     loc = q.first()
-    loc = schemas.Location.from_orm(loc)
+    if loc is not None:
+        loc = schemas.Location.from_orm(loc)
+    else:
+        loc = schemas.Location(PointID=pointid,
+                               LocationId=UUID("00000000-0000-0000-0000-000000000000"),
+                               PublicRelease=True)
 
     wells = _read_pods(pointid, db)
 
