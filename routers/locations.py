@@ -122,7 +122,11 @@ def read_location_pointid_jsonld(pointid: str, db: Session = Depends(get_db)):
 
 
 # Views ==========================================================
-templates = Jinja2Templates(directory="templates")
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
+# templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/view/{pointid}", response_class=HTMLResponse)
