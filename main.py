@@ -40,7 +40,6 @@ from dependencies import get_db
 from routers import locations, wells, waterlevels, ngwmn
 from starlette.templating import Jinja2Templates
 
-
 # ===============================================================================
 # views
 
@@ -70,8 +69,10 @@ from fastapi.responses import JSONResponse
 #     content = jsonable_encoder(content)
 #     return JSONResponse(content=content)
 
+from pathlib import Path
 
-templates = Jinja2Templates(directory="templates")
+BASE_DIR = Path(__file__).resolve().parent
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, 'templates')))
 
 
 @app.get("/map", response_class=HTMLResponse)
