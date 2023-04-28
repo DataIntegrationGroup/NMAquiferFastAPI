@@ -134,9 +134,11 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     if loc is not None:
         loc = schemas.Location.from_orm(loc)
     else:
-        loc = schemas.Location(PointID=pointid,
-                               LocationId=UUID("00000000-0000-0000-0000-000000000000"),
-                               PublicRelease=True)
+        loc = schemas.Location(
+            PointID=pointid,
+            LocationId=UUID("00000000-0000-0000-0000-000000000000"),
+            PublicRelease=True,
+        )
 
     wells = _read_pods(pointid, db)
 
