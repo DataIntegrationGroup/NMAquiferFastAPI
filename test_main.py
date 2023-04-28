@@ -49,12 +49,12 @@ def test_read_locations():
 
 
 def test_read_location_pointid():
-    response = client.get("/location/pointid/MG-030")
+    response = client.get("/locations/pointid/MG-030")
     assert response.status_code == 200
 
 
 def test_read_location_view():
-    response = client.get("/location/view/MG-030")
+    response = client.get("/locations/view/MG-030")
     assert response.status_code == 200
 
 

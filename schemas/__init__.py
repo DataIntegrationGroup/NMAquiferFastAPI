@@ -42,6 +42,35 @@ class Location(ORMBaseModel):
     geometry: Optional[dict] = None
 
 
+class LocationJSONLD(Location):
+    context: list = Field([{
+        "schema": "https://schema.org/",
+        "geoconnex": "@id",
+        "type": "@type",
+        "geosparql": "http://www.opengis.net/ont/geosparql#"
+    },
+        {
+            "sosa": "http://www.w3.org/ns/sosa/",
+            "ssn": "http://www.w3.org/ns/ssn/",
+            "Datastreams": "sosa:ObservationCollection",
+            "name": "schema:name",
+            "Locations": "schema:location",
+            "description": "schema:description"
+        }
+    ], alias="@context")
+    type: str = "schema:Place"
+
+    geosparql_has_geometry: dict = Field(..., alias="geosparql:hasGeometry")
+    schema_geo: dict = Field(..., alias="schema:geo")
+    links: list = Field(..., alias="links")
+
+
+class LocationGeoJSON(ORMBaseModel):
+    type: str = "Feature"
+    properties: dict = Field(..., alias="properties")
+    geometry: dict = Field(..., alias="geometry")
+
+
 class Well(ORMBaseModel):
     LocationId: UUID
     WellID: UUID
@@ -63,6 +92,5 @@ class Well(ORMBaseModel):
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
 
     pods: Optional[list] = None
-
 
 # ============= EOF =============================================
