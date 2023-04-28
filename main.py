@@ -29,7 +29,8 @@ from crud import (
     read_waterlevels_manual_query,
     public_release_filter,
     _read_pods,
-    read_waterlevels_pressure_query, read_locations,
+    read_waterlevels_pressure_query,
+    read_locations,
 )
 
 import plotly
@@ -40,10 +41,8 @@ from routers import locations, wells, waterlevels, ngwmn
 from starlette.templating import Jinja2Templates
 
 
-
 # ===============================================================================
 # views
-
 
 
 from fastapi.encoders import jsonable_encoder
@@ -73,6 +72,8 @@ from fastapi.responses import JSONResponse
 
 
 templates = Jinja2Templates(directory="templates")
+
+
 @app.get("/map", response_class=HTMLResponse)
 def map_view(request: Request, db: Session = Depends(get_db)):
     # q = db.query(models.Location.__table__)

@@ -51,7 +51,6 @@ class Location(Base):
 
     @property
     def geometry(self):
-
         lon, lat = self.lonlat
         elevation = self.Altitude
         # altitude is in ft above sea level geojson wants meters
@@ -77,8 +76,10 @@ class Location(Base):
     @property
     def geosparql_has_geometry(self):
         lon, lat = self.lonlat
-        return {"@type": "http://www.opengis.net/ont/sf#Point",
-                "geosparql:asWKT": f"POINT({lon}, {lat})"}
+        return {
+            "@type": "http://www.opengis.net/ont/sf#Point",
+            "geosparql:asWKT": f"POINT({lon}, {lat})",
+        }
 
     @property
     def schema_geo(self):
@@ -100,25 +101,25 @@ class Location(Base):
             },
             {
                 "rel": "alternate",
-                "href": f'{self.request_base_url}location/pointid/{self.PointID}',
+                "href": f"{self.request_base_url}location/pointid/{self.PointID}",
                 "type": "application/json",
-                "title": "This document as JSON"
+                "title": "This document as JSON",
             },
             {
                 "rel": "alternate",
-                "href": f'{self.request_base_url}location/pointid/{self.PointID}/geojson',
+                "href": f"{self.request_base_url}location/pointid/{self.PointID}/geojson",
                 "type": "application/geo+json",
-                "title": "This document as GeoJSON"
-            }
-
+                "title": "This document as GeoJSON",
+            },
         ]
 
     @property
     def properties(self):
-        return {"point_id": self.PointID,
-                "alternate_name": self.AlternateSiteID,
-                "elevation_method": self.elevation_method,
-                }
+        return {
+            "point_id": self.PointID,
+            "alternate_name": self.AlternateSiteID,
+            "elevation_method": self.elevation_method,
+        }
 
 
 class LU_Mixin(object):
@@ -225,5 +226,6 @@ class WaterLevels(Base, MeasurementMixin):
     TimeMeasured = Column(Time)
 
     PublicRelease = Column(Boolean)
+
 
 # ============= EOF =============================================

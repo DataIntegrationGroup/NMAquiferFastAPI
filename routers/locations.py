@@ -30,11 +30,16 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import public_release_filter, _read_pods, read_waterlevels_manual_query, read_waterlevels_pressure_query
+from crud import (
+    public_release_filter,
+    _read_pods,
+    read_waterlevels_manual_query,
+    read_waterlevels_pressure_query,
+)
 from dependencies import get_db
 import plotly.graph_objects as go
 
-router = APIRouter(prefix='/locations', tags=['locations'])
+router = APIRouter(prefix="/locations", tags=["locations"])
 
 
 @router.get("/geojson", response_model=list[schemas.LocationGeoJSON])
@@ -94,7 +99,9 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
-def read_location_pointid_jsonld(request: Request, pointid: str, db: Session = Depends(get_db)):
+def read_location_pointid_jsonld(
+    request: Request, pointid: str, db: Session = Depends(get_db)
+):
     loc = get_location(pointid, db)
     if loc is None:
         loc = Response(status_code=HTTP_200_OK)
@@ -170,10 +177,12 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
 
 # End Views ======================================================
 
+
 def get_location(pointid, db):
     q = db.query(models.Location)
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
+
 
 # ============= EOF =============================================
