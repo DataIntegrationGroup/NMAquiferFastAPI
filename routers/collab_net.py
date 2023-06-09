@@ -50,7 +50,9 @@ def read_waterlevels(db: Session = Depends(get_db)):
 
     stream = io.StringIO()
     writer = csv.writer(stream)
-    for l in locations:
+    n = len(locations)
+    for i, l in enumerate(locations):
+        print(f'getting waterlevels for {i}/{n}, {l.PointID}')
         waterlevels = read_waterlevels_manual_query(l.PointID, db)
         for wi in waterlevels:
             rows.append(
