@@ -199,7 +199,10 @@ class MeasurementMixin(object):
 
     @property
     def measurement_method(self):
-        return self.lu_measurement_method.Meaning
+        try:
+            return self.lu_measurement_method.Meaning
+        except AttributeError:
+            return ""
 
     @property
     def data_source(self):
