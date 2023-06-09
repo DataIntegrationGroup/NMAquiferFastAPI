@@ -206,7 +206,10 @@ class MeasurementMixin(object):
 
     @property
     def data_source(self):
-        return self.lu_data_source.Meaning
+        try:
+            return self.lu_data_source.Meaning
+        except AttributeError:
+            return ""
 
 
 class WaterLevelsContinuous_Pressure(Base, MeasurementMixin):
