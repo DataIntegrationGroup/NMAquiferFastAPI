@@ -37,7 +37,7 @@ import plotly
 import plotly.graph_objects as go
 
 from dependencies import get_db
-from routers import locations, wells, waterlevels, ngwmn
+from routers import locations, wells, waterlevels, ngwmn, collab_net
 from starlette.templating import Jinja2Templates
 
 # ===============================================================================
@@ -121,6 +121,7 @@ app.include_router(locations.router)
 app.include_router(wells.router)
 app.include_router(waterlevels.router)
 app.include_router(ngwmn.router)
+app.include_router(collab_net.router)
 add_pagination(app)
 
 if __name__ == "__main__":

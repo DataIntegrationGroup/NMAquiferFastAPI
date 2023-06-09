@@ -143,11 +143,20 @@ class LU_AltitudeMethod(Base, LU_Mixin):
     __tablename__ = "LU_AltitudeMethod"
 
 
+class ProjectLocations(Base):
+    __tablename__ = 'ProjectLocations'
+    GlobalID = Column(GUID, primary_key=True)
+    LocationId = Column(GUID, ForeignKey("Location.LocationId"))
+    PointID = Column(String(10))
+    ProjectName = Column(String(250))
+
+
 class Well(Base):
     __tablename__ = "WellData"
-    LocationId = Column(GUID, ForeignKey("Location.LocationId"))
+    # LocationId = Column(GUID, ForeignKey("Location.LocationId"))
+    LocationId = Column(GUID)
     WellID = Column(GUID, primary_key=True)
-    PointID = Column(String(50))
+    PointID = Column(String(50), ForeignKey("Location.PointID"))
     HoleDepth = Column(Integer)
     WellDepth = Column(Integer)
     OSEWellID = Column(String(50))
