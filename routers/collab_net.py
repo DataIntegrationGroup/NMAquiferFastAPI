@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import csv
 import io
 import json
 
@@ -28,7 +29,7 @@ from dependencies import get_db
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
 
 
-@router.get("/waterlevels")
+@router.get("/waterlevels/csv")
 def read_waterlevels(db: Session = Depends(get_db)):
     q = db.query(models.Location)
     q = q.join(models.ProjectLocations)
@@ -36,15 +37,23 @@ def read_waterlevels(db: Session = Depends(get_db)):
     q = public_release_filter(q)
     locations = q.all()
 
-    rows = []
-    for l in locations:
-        waterlevels = read_waterlevels_manual_query(l.PointID, db)
-        for wi in waterlevels:
-            rows.append((l.PointID, wi.DateMeasured, wi.DepthToWaterBGS))
+    rows = [('PointID', 'DateMeasured', 'DepthToWaterBGS',
+             'MeasurementMethod', 'DataSource', 'MeasuringAgency')]
 
     stream = io.StringIO()
-    stream.write("\n".join([",".join(map(str, r)) for r in rows]))
-    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+    writer = csv.writer(stream)
+    for l in locations[:10]:
+        waterlevels = read_waterlevels_manual_query(l.PointID, db)
+        for wi in waterlevels:
+            rows.append((l.PointID, wi.DateMeasured, wi.DepthToWaterBGS,
+                         wi.measurement_method,
+                         wi.data_source,
+                         wi.MeasuringAgency))
+    writer.writerows(rows)
+
+    # stream.write('\n'.join([','.join(map(str, r)) for r in rows]))
+    response = StreamingResponse(
+        iter([stream.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
     return response
 
@@ -55,8 +64,7 @@ def read_locations_geojson(db: Session = Depends(get_db)):
     stream = io.StringIO()
     stream.write(json.dumps(content))
     response = StreamingResponse(
-        iter([stream.getvalue()]), media_type="application/json"
-    )
+        iter([stream.getvalue()]), media_type="application/json")
     response.headers["Content-Disposition"] = "attachment; filename=locations.json"
     return response
 
@@ -78,10 +86,11 @@ def get_locations(db: Session = Depends(get_db)):
     def togeojson(l, w):
         return {
             "type": "Feature",
-            "properties": {
-                "name": l.PointID,
-                "well_depth": {"value": w.WellDepth, "units": "ft"},
-            },
+            "properties": {"name": l.PointID,
+                           "well_depth": {"value": w.WellDepth,
+                                          "units": "ft"},
+
+                           },
             "geometry": l.geometry,
         }
 
@@ -90,6 +99,5 @@ def get_locations(db: Session = Depends(get_db)):
     }
 
     return content
-
 
 # ============= EOF =============================================
