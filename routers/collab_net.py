@@ -43,9 +43,8 @@ def read_waterlevels(db: Session = Depends(get_db)):
             rows.append((l.PointID, wi.DateMeasured, wi.DepthToWaterBGS))
 
     stream = io.StringIO()
-    stream.write('\n'.join([','.join(map(str, r)) for r in rows]))
-    response = StreamingResponse(
-        iter([stream.getvalue()]), media_type="text/csv")
+    stream.write("\n".join([",".join(map(str, r)) for r in rows]))
+    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
     return response
 
@@ -56,7 +55,8 @@ def read_locations_geojson(db: Session = Depends(get_db)):
     stream = io.StringIO()
     stream.write(json.dumps(content))
     response = StreamingResponse(
-        iter([stream.getvalue()]), media_type="application/json")
+        iter([stream.getvalue()]), media_type="application/json"
+    )
     response.headers["Content-Disposition"] = "attachment; filename=locations.json"
     return response
 
@@ -76,12 +76,12 @@ def get_locations(db: Session = Depends(get_db)):
     locations = q.all()
 
     def togeojson(l, w):
-
         return {
             "type": "Feature",
-            "properties": {"name": l.PointID,
-                           "well_depth": {"value": w.WellDepth,
-                                          "units": "ft"},},
+            "properties": {
+                "name": l.PointID,
+                "well_depth": {"value": w.WellDepth, "units": "ft"},
+            },
             "geometry": l.geometry,
         }
 
@@ -89,7 +89,7 @@ def get_locations(db: Session = Depends(get_db)):
         "features": [togeojson(*l) for l in locations],
     }
 
-
     return content
+
 
 # ============= EOF =============================================

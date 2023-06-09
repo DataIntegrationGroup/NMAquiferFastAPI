@@ -144,7 +144,7 @@ class LU_AltitudeMethod(Base, LU_Mixin):
 
 
 class ProjectLocations(Base):
-    __tablename__ = 'ProjectLocations'
+    __tablename__ = "ProjectLocations"
     GlobalID = Column(GUID, primary_key=True)
     LocationId = Column(GUID, ForeignKey("Location.LocationId"))
     PointID = Column(String(10))
