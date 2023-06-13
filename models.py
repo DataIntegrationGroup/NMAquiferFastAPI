@@ -131,6 +131,14 @@ class LU_Formations(Base, LU_Mixin):
     __tablename__ = "LU_Formations"
 
 
+class LU_LevelStatus(Base, LU_Mixin):
+    __tablename__ = "LU_LevelStatus"
+
+
+class LU_DataQuality(Base, LU_Mixin):
+    __tablename__ = "LU_DataQuality"
+
+
 class LU_MeasurementMethod(Base, LU_Mixin):
     __tablename__ = "LU_MeasurementMethod"
 
@@ -242,5 +250,34 @@ class WaterLevels(Base, MeasurementMixin):
 
     PublicRelease = Column(Boolean)
 
+    @declared_attr
+    def LevelStatus(self):
+        return Column(String(2), ForeignKey("LU_LevelStatus.Code"))
+
+    @declared_attr
+    def DataQuality(self):
+        return Column(String(2), ForeignKey("LU_DataQuality.Code"))
+
+    @declared_attr
+    def lu_level_status(cls):
+        return relationship("LU_LevelStatus", uselist=False)
+
+    @declared_attr
+    def lu_data_quality(cls):
+        return relationship("LU_DataQuality", uselist=False)
+
+    @property
+    def level_status(self):
+        try:
+            return self.lu_level_status.Meaning
+        except AttributeError:
+            return ""
+
+    @property
+    def data_quality(self):
+        try:
+            return self.lu_data_quality.Meaning
+        except AttributeError:
+            return ""
 
 # ============= EOF =============================================

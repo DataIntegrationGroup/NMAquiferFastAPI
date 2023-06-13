@@ -45,6 +45,8 @@ def read_waterlevels(db: Session = Depends(get_db)):
             "MeasurementMethod",
             "DataSource",
             "MeasuringAgency",
+            'LevelStatus',
+            'DataQuality',
         )
     ]
 
@@ -63,6 +65,8 @@ def read_waterlevels(db: Session = Depends(get_db)):
                     wi.measurement_method,
                     wi.data_source,
                     wi.MeasuringAgency,
+                    wi.level_status,
+                    wi.data_quality,
                 )
             )
     writer.writerows(rows)
