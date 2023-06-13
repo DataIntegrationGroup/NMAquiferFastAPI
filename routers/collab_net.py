@@ -45,8 +45,8 @@ def read_waterlevels(db: Session = Depends(get_db)):
             "MeasurementMethod",
             "DataSource",
             "MeasuringAgency",
-            'LevelStatus',
-            'DataQuality',
+            "LevelStatus",
+            "DataQuality",
         )
     ]
 
