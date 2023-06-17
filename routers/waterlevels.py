@@ -33,8 +33,9 @@ router = APIRouter(prefix="/waterlevels", tags=["waterlevels"])
 # ============= EOF =============================================
 @router.get("/manual", response_model=Page[waterlevels.WaterLevels])
 @router.get(
-    "/manual/limit-offset", response_model=LimitOffsetPage[waterlevels.WaterLevels],
-    include_in_schema=False
+    "/manual/limit-offset",
+    response_model=LimitOffsetPage[waterlevels.WaterLevels],
+    include_in_schema=False,
 )
 def read_waterlevels_manual(pointid: str = None, db: Session = Depends(get_db)):
     q = read_waterlevels_manual_query(pointid, db)
@@ -47,7 +48,7 @@ def read_waterlevels_manual(pointid: str = None, db: Session = Depends(get_db)):
 @router.get(
     "/pressure/limit-offset",
     response_model=LimitOffsetPage[waterlevels.WaterLevelsContinuous_Pressure],
-    include_in_schema=False
+    include_in_schema=False,
 )
 def read_waterlevels_pressure(pointid: str = None, db: Session = Depends(get_db)):
     q = read_waterlevels_pressure_query(pointid, db)
@@ -60,7 +61,7 @@ def read_waterlevels_pressure(pointid: str = None, db: Session = Depends(get_db)
 @router.get(
     "/acoustic/limit-offset",
     response_model=LimitOffsetPage[waterlevels.WaterLevelsContinuous_Acoustic],
-    include_in_schema=False
+    include_in_schema=False,
 )
 def read_waterlevels_acoustic(pointid: str = None, db: Session = Depends(get_db)):
     q = read_waterlevels_acoustic_query(pointid, db)

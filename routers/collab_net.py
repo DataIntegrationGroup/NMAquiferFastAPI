@@ -38,6 +38,7 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 @router.get("/map")
 def map_view(request: Request, db: Session = Depends(get_db)):
     ls = get_locations(db)
+
     def make_point(i):
         return {
             "type": "Feature",
