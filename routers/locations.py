@@ -62,7 +62,8 @@ def read_locations_geojson(db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=Page[schemas.Location])
-@router.get("/limit-offset", response_model=LimitOffsetPage[schemas.Location])
+@router.get("/limit-offset", response_model=LimitOffsetPage[schemas.Location],
+            include_in_schema=False)
 def read_locations(pointid: str = None, db: Session = Depends(get_db)):
     q = db.query(models.Location)
     if pointid:

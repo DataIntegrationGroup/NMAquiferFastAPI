@@ -31,7 +31,7 @@ SQLALCHEMY_DATABASE_URL = f"mssql+pymssql://{user}:{password}@{host}/{database}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    # connect_args={"check_same_thread": False}
+    connect_args={"timeout": 1}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

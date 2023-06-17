@@ -19,7 +19,9 @@ import json
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from starlette.requests import Request
 from starlette.responses import StreamingResponse
+from starlette.templating import Jinja2Templates
 
 import models
 import schemas
@@ -27,6 +29,42 @@ from crud import public_release_filter, read_waterlevels_manual_query
 from dependencies import get_db
 
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
+
+
+@router.get("/map")
+def map_view(request: Request, db: Session = Depends(get_db)):
+    ls = get_locations(db)
+    def make_point(i):
+        return {
+            "type": "Feature",
+            "properties": {"name": f"Point {i.PointID}"},
+            "geometry": i.geometry,
+        }
+
+    return templates.TemplateResponse(
+        "map_view.html",
+        {
+            "request": request,
+            "center": {"lat": 34.5, "lon": -106.0},
+            "zoom": 7,
+            "points": {
+                "type": "FeatureCollection",
+                "features": [make_point(i) for i in ls],
+            }
+            # "points": {
+            #     'type': 'FeatureCollection',
+            #     'features': [
+            #     {'type': 'Feature',
+            #      'geometry': {'type': 'Point', 'coordinates': [-106+i, 34.5+i]}}
+            #      for i in range(10)
+            #      ]
+            # }
+        },
+    )
 
 
 @router.get("/waterlevels/csv")
@@ -79,7 +117,9 @@ def read_waterlevels(db: Session = Depends(get_db)):
 
 @router.get("/locations/geojson")
 def read_locations_geojson(db: Session = Depends(get_db)):
-    content = get_locations(db)
+    ls = get_locations(db)
+    content = locations_geojson(ls)
+
     stream = io.StringIO()
     stream.write(json.dumps(content))
     response = StreamingResponse(
@@ -91,7 +131,8 @@ def read_locations_geojson(db: Session = Depends(get_db)):
 
 @router.get("/locations", response_model=schemas.LocationFeatureCollection)
 def read_locations_geojson(db: Session = Depends(get_db)):
-    content = get_locations(db)
+    ls = get_locations(db)
+    content = locations_geojson(ls)
     return content
 
 
@@ -101,8 +142,13 @@ def get_locations(db: Session = Depends(get_db)):
     q = q.join(models.Well)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
     q = public_release_filter(q)
-    locations = q.all()
+    try:
+        return q.all()
+    except Exception as e:
+        return []
 
+
+def locations_geojson(locations):
     def togeojson(l, w):
         return {
             "type": "Feature",
