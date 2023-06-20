@@ -123,7 +123,7 @@ def read_locations_csv(db: Session = Depends(get_db)):
     for i, (l, w) in enumerate(ls):
         lon, lat = l.lonlat
         row = (
-            i+1,
+            i + 1,
             l.PointID,
             lat,
             lon,
