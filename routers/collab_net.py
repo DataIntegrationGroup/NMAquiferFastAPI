@@ -37,33 +37,22 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 @router.get("/map")
 def map_view(request: Request, db: Session = Depends(get_db)):
-    ls = get_locations(db)
-
-    def make_point(i):
-        return {
-            "type": "Feature",
-            "properties": {"name": f"Point {i.PointID}"},
-            "geometry": i.geometry,
-        }
+    # ls = get_locations(db)
+    # def make_point(loc, well):
+    #     return {
+    #         "type": "Feature",
+    #         "properties": {"name": f"Point {loc.PointID}"},
+    #         "geometry": loc.geometry,
+    #     }
 
     return templates.TemplateResponse(
-        "map_view.html",
+        "collabnet_map_view.html",
         {
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 7,
-            "points": {
-                "type": "FeatureCollection",
-                "features": [make_point(i) for i in ls],
-            }
-            # "points": {
-            #     'type': 'FeatureCollection',
-            #     'features': [
-            #     {'type': 'Feature',
-            #      'geometry': {'type': 'Point', 'coordinates': [-106+i, 34.5+i]}}
-            #      for i in range(10)
-            #      ]
-            # }
+            "data_url": "/collabnet/locations",
+            "nlocations": get_nlocations(db),
         },
     )
 
@@ -135,6 +124,14 @@ def read_locations_geojson(db: Session = Depends(get_db)):
     ls = get_locations(db)
     content = locations_geojson(ls)
     return content
+
+
+def get_nlocations(db: Session = Depends(get_db)):
+    q = db.query(models.Location)
+    q = q.join(models.ProjectLocations)
+    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+    q = public_release_filter(q)
+    return q.count()
 
 
 def get_locations(db: Session = Depends(get_db)):

@@ -80,14 +80,14 @@ def map_view(request: Request, db: Session = Depends(get_db)):
     # q = db.query(models.Location.__table__)
     # q = public_release_filter(q)
     # locations = q.all()
-    locations = read_locations(db)
-
-    def make_point(i):
-        return {
-            "type": "Feature",
-            "properties": {"name": f"Point {i.PointID}"},
-            "geometry": i.geometry,
-        }
+    # locations = read_locations(db)
+    #
+    # def make_point(i):
+    #     return {
+    #         "type": "Feature",
+    #         "properties": {"name": f"Point {i.PointID}"},
+    #         "geometry": i.geometry,
+    #     }
 
     return templates.TemplateResponse(
         "map_view.html",
@@ -95,18 +95,7 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 7,
-            "points": {
-                "type": "FeatureCollection",
-                "features": [make_point(i) for i in locations],
-            }
-            # "points": {
-            #     'type': 'FeatureCollection',
-            #     'features': [
-            #     {'type': 'Feature',
-            #      'geometry': {'type': 'Point', 'coordinates': [-106+i, 34.5+i]}}
-            #      for i in range(10)
-            #      ]
-            # }
+            'data_url': '/locations/geojson',
         },
     )
 

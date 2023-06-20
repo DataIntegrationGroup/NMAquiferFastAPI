@@ -9,12 +9,23 @@
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #statstable { position: absolute; top: 0; left: 0;
+            padding: 10px; background: rgba(38, 191, 89, 0.5)
+        }
     </style>
 </head>
 
 <body>
-
     <div id="map"></div>
+    <div id="statstable">
+        <h2>Statistics</h2>
+        <table>
+            <tr>
+                <td>N. Wells</td><td>{{ nlocations }}</td>
+            </tr>
+        </table>
+    </div>
+
 
     <script>
         // TO MAKE THE MAP APPEAR YOU MUST
