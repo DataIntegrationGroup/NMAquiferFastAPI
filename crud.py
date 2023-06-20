@@ -86,8 +86,9 @@ def _read_pods(pointid, db):
         ps = q.all()
 
         for pi in ps:
-            # print(pi)
+
             ose_id = pi.OSEWellID
+            pi.pods = []
             if ose_id:
                 url = (
                     f"https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/OSE_PODs/FeatureServer/0/query"

@@ -75,7 +75,10 @@
             map.getCanvas().style.cursor = '';
             popup.remove();
         });
-
+        map.on('click', 'wells', (e) => {
+            const pointid = e.features[0].properties.name
+            window.open('/locations/view/' + pointid, '_blank')
+        });
         map.on('load',  () => {map.addSource('wells', {type: 'geojson',
             data: '{{ data_url }}' });
 
