@@ -12,6 +12,7 @@
         #statstable { position: absolute; top: 0; left: 0;
             padding: 10px; background: rgba(38, 191, 89, 0.5)
         }
+        #downloads { position: relative; }
     </style>
 </head>
 
@@ -25,6 +26,13 @@
             </tr>
         </table>
     </div>
+    <div id="downloads">
+        <form>
+            <button type="submit" formaction="/collabnet/locations/geojson">Download Locations</button>
+            <button type="submit" formaction="/collabnet/locations/csv">Download Locations CSV</button>
+        </form>
+
+    </div>
 
 
     <script>
@@ -36,8 +44,8 @@
             container: 'map', // container ID
     // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
             style: 'mapbox://styles/mapbox/streets-v12', // style URL
-            center: [-106.5, 35], // starting position [lng, lat]
-            zoom: 7 // starting zoom
+            center: {{ center| tojson }}, // starting position [lng, lat]
+            zoom: {{ zoom }} // starting zoom
         });
 
         const popup = new mapboxgl.Popup({

@@ -50,7 +50,7 @@ def map_view(request: Request, db: Session = Depends(get_db)):
         {
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
-            "zoom": 7,
+            "zoom": 6,
             "data_url": "/collabnet/locations",
             "nlocations": get_nlocations(db),
         },
@@ -105,6 +105,29 @@ def read_waterlevels(db: Session = Depends(get_db)):
     return response
 
 
+
+@router.get("/locations/csv")
+def read_locations_csv(db: Session = Depends(get_db)):
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    ls = get_locations(db)
+    writer.writerow(("index", "PointID", "Latitude", "Longitude", "Elevation (ft asl)", "WellDepth (ft bgs)"))
+    for i, (l, w) in enumerate(ls):
+        lon, lat = l.lonlat
+        row = (i, l.PointID,
+               lat, lon,
+               # l.geometry.coordinates[1],
+               # l.geometry.coordinates[0],
+               f'{l.Altitude :0.2f}',
+               f'{w.WellDepth or 0:0.2f}')
+        writer.writerow(row)
+
+    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=locations.csv"
+
+    return response
+
+
 @router.get("/locations/geojson")
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = get_locations(db)
@@ -140,6 +163,7 @@ def get_locations(db: Session = Depends(get_db)):
     q = q.join(models.Well)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
     q = public_release_filter(q)
+    q = q.order_by(models.Location.PointID)
     try:
         return q.all()
     except Exception as e:
