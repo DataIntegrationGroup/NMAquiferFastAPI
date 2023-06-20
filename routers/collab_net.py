@@ -105,21 +105,33 @@ def read_waterlevels(db: Session = Depends(get_db)):
     return response
 
 
-
 @router.get("/locations/csv")
 def read_locations_csv(db: Session = Depends(get_db)):
     stream = io.StringIO()
     writer = csv.writer(stream)
     ls = get_locations(db)
-    writer.writerow(("index", "PointID", "Latitude", "Longitude", "Elevation (ft asl)", "WellDepth (ft bgs)"))
+    writer.writerow(
+        (
+            "index",
+            "PointID",
+            "Latitude",
+            "Longitude",
+            "Elevation (ft asl)",
+            "WellDepth (ft bgs)",
+        )
+    )
     for i, (l, w) in enumerate(ls):
         lon, lat = l.lonlat
-        row = (i, l.PointID,
-               lat, lon,
-               # l.geometry.coordinates[1],
-               # l.geometry.coordinates[0],
-               f'{l.Altitude :0.2f}',
-               f'{w.WellDepth or 0:0.2f}')
+        row = (
+            i,
+            l.PointID,
+            lat,
+            lon,
+            # l.geometry.coordinates[1],
+            # l.geometry.coordinates[0],
+            f"{l.Altitude :0.2f}",
+            f"{w.WellDepth or 0:0.2f}",
+        )
         writer.writerow(row)
 
     response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
