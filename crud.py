@@ -86,7 +86,6 @@ def _read_pods(pointid, db):
         ps = q.all()
 
         for pi in ps:
-
             ose_id = pi.OSEWellID
             pi.pods = []
             if ose_id:
