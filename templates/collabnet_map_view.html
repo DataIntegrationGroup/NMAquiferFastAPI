@@ -1,18 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="utf-8">
     <title>Display a map on a webpage</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+            crossorigin="anonymous"></script>
+
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <style>
         body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 90%}
         #statstable { position: absolute; top: 0; left: 0;
             padding: 10px; background: rgba(38, 191, 89, 0.5)
         }
         #downloads { position: relative; }
+
+
+        #loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            width: 120px;
+            height: 120px;
+            margin: -76px 0 0 -76px;
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+            display: none;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Add animation to "page content" */
+        .animate-bottom {
+            position: relative;
+            -webkit-animation-name: animatebottom;
+            -webkit-animation-duration: 1s;
+            animation-name: animatebottom;
+            animation-duration: 1s
+        }
+
+        @-webkit-keyframes animatebottom {
+            from { bottom:-100px; opacity:0 }
+            to { bottom:0px; opacity:1 }
+        }
+
+        @keyframes animatebottom {
+            from{ bottom:-100px; opacity:0 }
+            to{ bottom:0; opacity:1 }
+        }
+
+
     </style>
 </head>
 
@@ -30,10 +83,13 @@
         <form>
             <button type="submit" formaction="/collabnet/locations/geojson">Download Locations</button>
             <button type="submit" formaction="/collabnet/locations/csv">Download Locations CSV</button>
+            <button id='download_waterlevels' type="submit" formaction="/collabnet/waterlevels/csv">Download Water
+                Levels
+            CSV</button>
         </form>
 
     </div>
-
+    <div id="loader"></div>
 
     <script>
         // TO MAKE THE MAP APPEAR YOU MUST
@@ -92,8 +148,27 @@
                     }
             });
           });
+    </script>
+
+    <script>
+         // get the download water levels button element
+        const downloadButton = document.querySelector('#download_waterlevels');
+        // add event listener to the button
+         downloadButton.addEventListener("click", async () => {
+             document.getElementById("loader").style.display = "block";
+             await fetch('/collabnet/waterlevels/csv').then(resp =>{
+                document.getElementById("loader").style.display = "none";
+                return resp
+             })
+
+
+
+
+            }
+         )
 
     </script>
+
 
     </body>
 </html>
