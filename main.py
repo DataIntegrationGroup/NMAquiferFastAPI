@@ -95,7 +95,7 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 7,
-            'data_url': '/locations/geojson',
+            "data_url": "/locations/geojson",
         },
     )
 
