@@ -123,7 +123,7 @@ def read_locations_csv(db: Session = Depends(get_db)):
     for i, (l, w) in enumerate(ls):
         lon, lat = l.lonlat
         row = (
-            i,
+            i+1,
             l.PointID,
             lat,
             lon,
@@ -162,24 +162,26 @@ def read_locations_geojson(db: Session = Depends(get_db)):
 
 
 def get_nlocations(db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = q.join(models.ProjectLocations)
-    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
-    q = public_release_filter(q)
+    q = get_locations_query(db)
     return q.count()
 
 
 def get_locations(db: Session = Depends(get_db)):
+    q = get_locations_query(db)
+    try:
+        return q.all()
+    except Exception as e:
+        return []
+
+
+def get_locations_query(db):
     q = db.query(models.Location, models.Well)
     q = q.join(models.ProjectLocations)
     q = q.join(models.Well)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
     q = public_release_filter(q)
     q = q.order_by(models.Location.PointID)
-    try:
-        return q.all()
-    except Exception as e:
-        return []
+    return q
 
 
 def locations_geojson(locations):
