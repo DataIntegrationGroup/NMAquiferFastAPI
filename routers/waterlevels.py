@@ -34,7 +34,6 @@ from dependencies import get_db
 router = APIRouter(prefix="/waterlevels", tags=["waterlevels"])
 
 
-
 @router.get("/manual", response_model=Page[waterlevels.WaterLevels])
 @router.get(
     "/manual/limit-offset",
@@ -72,22 +71,22 @@ def read_waterlevels_acoustic(pointid: str = None, db: Session = Depends(get_db)
     return paginate(q)
 
 
-@router.get('/{pointid}/csv')
+@router.get("/{pointid}/csv")
 def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
     manual = read_waterlevels_manual_query(pointid, db).all()
     acoustic = read_waterlevels_acoustic_query(pointid, db).all()
     pressure = read_waterlevels_pressure_query(pointid, db).all()
 
     rows = []
-    rows.append(['#DateMeasured', 'DepthToWater (ftbgs)'])
-    rows.append(['#Manual Water Levels'])
+    rows.append(["#DateMeasured", "DepthToWater (ftbgs)"])
+    rows.append(["#Manual Water Levels"])
 
     for mi in manual:
         row = [mi.DateMeasured, mi.DepthToWaterBGS]
         rows.append(row)
 
     if acoustic:
-        rows.append(['#Manual Water Levels'])
+        rows.append(["#Manual Water Levels"])
         for ai in acoustic:
             row = [ai.DateMeasured, ai.DepthToWaterBGS]
             rows.append(row)
@@ -103,7 +102,9 @@ def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
     writer.writerows(rows)
 
     response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-    response.headers["Content-Disposition"] = f"attachment; filename={pointid}_waterlevels.csv"
+    response.headers[
+        "Content-Disposition"
+    ] = f"attachment; filename={pointid}_waterlevels.csv"
     return response
 
 
