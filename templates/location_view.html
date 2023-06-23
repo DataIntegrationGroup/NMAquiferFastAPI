@@ -16,14 +16,18 @@
             <div class="col-sm">
                 <form>
                     <button class="btn btn-primary" action="submit" formaction="/waterlevels/{{ location.PointID
-                            }}/csv">Download
-                        WaterLevels</button>
+                            }}/csv">Download WaterLevels</button>
+                    <button class="btn btn-primary"
+                            formaction="/locations/pointid/{{ location.PointID}}/download">
+                        Download Site/Well Info
+                    </button>
+
                 </form>
             </div>
         </div>
         <hr>
         <div class="row">
-            <div id='chart' class='chart'”></div>
+            <div id='chart' class='chart'></div>
         </div>
         <hr>
         <div class="row">

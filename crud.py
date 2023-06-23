@@ -84,6 +84,12 @@ def read_well(pointid, db):
     return q.first()
 
 
+def read_ose_pod(ose_id):
+    url = 'https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/' \
+          'OSE_PODs/FeatureServer/0/query?' \
+          f'where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*'
+    return requests.get(url).json(), url
+
 # def _read_pods(pointid, db):
 #     q = db.query(models.Well)
 #     if pointid:

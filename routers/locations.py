@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import io
 import json
 from uuid import UUID
 
@@ -24,7 +25,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse, HTMLResponse
+from starlette.responses import Response, JSONResponse, HTMLResponse, StreamingResponse
 from starlette.status import HTTP_200_OK
 from starlette.templating import Jinja2Templates
 
@@ -34,7 +35,7 @@ from crud import (
     public_release_filter,
     read_waterlevels_manual_query,
     read_waterlevels_pressure_query,
-    read_well,
+    read_well, read_ose_pod,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -86,12 +87,51 @@ def read_location(location_id: UUID, db: Session = Depends(get_db)):
     )
 
 
+def safe_json(d):
+    for k, v in d.items():
+        if isinstance(v, UUID):
+            d[k] = str(v)
+        if isinstance(v, dict):
+            safe_json(v)
+
+
+@router.get("/pointid/{pointid}/download")
+def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
+    loc = get_location(pointid, db)
+    if loc is None:
+        loc = Response(status_code=HTTP_200_OK)
+        return loc
+    else:
+
+        well = read_well(pointid, db)
+        pod, pod_url = read_ose_pod(well.OSEWellID)
+
+        stream = io.StringIO()
+        loc = schemas.Location.from_orm(loc)
+        well = schemas.Well.from_orm(well)
+
+        payload = {'location': loc.dict(),
+                   'well': well.dict(),
+                   'pod': {'properties': pod['features'][0]['attributes'],
+                           'source_url': pod_url,}}
+
+        safe_json(payload)
+        json.dump(payload, stream, indent=2)
+
+        response = StreamingResponse(iter([stream.getvalue()]), media_type="application/json")
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename={pointid}.json"
+        return response
+
+
 @router.get("/pointid/{pointid}", response_model=schemas.Location)
 def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
-    loc = q.first()
+    # q = db.query(models.Location)
+    # q = q.filter(models.Location.PointID == pointid)
+    # q = public_release_filter(q)
+    # loc = q.first()
+    loc = get_location(pointid, db)
     if loc is None:
         loc = Response(status_code=HTTP_200_OK)
 
@@ -100,7 +140,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-    request: Request, pointid: str, db: Session = Depends(get_db)
+        request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -113,7 +153,7 @@ def read_location_pointid_jsonld(
 
 
 @router.get("/pointid/{pointid}/geojson", response_model=schemas.LocationGeoJSON)
-def read_location_pointid_jsonld(pointid: str, db: Session = Depends(get_db)):
+def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
     loc = get_location(pointid, db)
     if loc is None:
         loc = Response(status_code=HTTP_200_OK)
@@ -126,15 +166,19 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
+
+
 # templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/view/{pointid}", response_class=HTMLResponse)
 def location_view(request: Request, pointid: str, db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
-    loc = q.first()
+    # q = db.query(models.Location)
+    # q = q.filter(models.Location.PointID == pointid)
+    # q = public_release_filter(q)
+    # loc = q.first()
+    loc = get_location(pointid, db)
+
     if loc is not None:
         loc = schemas.Location.from_orm(loc)
     else:
@@ -197,6 +241,5 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
-
 
 # ============= EOF =============================================
