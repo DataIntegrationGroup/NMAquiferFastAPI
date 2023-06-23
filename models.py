@@ -185,9 +185,11 @@ class Well(Base):
     def pod_url(self):
         ose_id = self.OSEWellID
         if ose_id:
-            url = 'https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/' \
-                  'OSE_PODs/FeatureServer/0/query?' \
-                  f'where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*'
+            url = (
+                "https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/"
+                "OSE_PODs/FeatureServer/0/query?"
+                f"where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*"
+            )
             return url
 
     @property

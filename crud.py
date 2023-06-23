@@ -74,6 +74,7 @@ def read_waterlevels_manual_query(pointid, db, as_dict=False):
     q = public_release_filter(q)
     return q
 
+
 def read_well(pointid, db):
     q = db.query(models.Well)
     if pointid:
