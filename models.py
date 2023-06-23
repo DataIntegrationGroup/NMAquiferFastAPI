@@ -182,6 +182,15 @@ class Well(Base):
     waterlevels = relationship("WaterLevels", backref="well", uselist=False)
 
     @property
+    def pod_url(self):
+        ose_id = self.OSEWellID
+        if ose_id:
+            url = 'https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/' \
+                  'OSE_PODs/FeatureServer/0/query?' \
+                  f'where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*'
+            return url
+
+    @property
     def formation(self):
         return self.lu_formation.Meaning
 

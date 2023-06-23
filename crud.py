@@ -74,34 +74,36 @@ def read_waterlevels_manual_query(pointid, db, as_dict=False):
     q = public_release_filter(q)
     return q
 
-
-def _read_pods(pointid, db):
+def read_well(pointid, db):
     q = db.query(models.Well)
     if pointid:
         q = q.join(models.Location)
         q = q.filter(models.Location.PointID == pointid)
-        q = q.order_by(models.Well.WellID)
-        q = public_release_filter(q)
+    q = public_release_filter(q)
+    return q.first()
 
-        ps = q.all()
 
-        for pi in ps:
-            ose_id = pi.OSEWellID
-            pi.pods = []
-            if ose_id:
-                url = (
-                    f"https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/OSE_PODs/FeatureServer/0/query"
-                    f"?where"
-                    f"=db_file= '{ose_id}' &outFields=*&outSR=4326&f=json"
-                )
-
-                resp = requests.get(url)
-                resp = resp.json()
-                pods = resp.get("features")
-
-                pi.pods = pods
-
-        return ps
+# def _read_pods(pointid, db):
+#     q = db.query(models.Well)
+#     if pointid:
+#         q = q.join(models.Location)
+#         q = q.filter(models.Location.PointID == pointid)
+#         q = q.order_by(models.Well.WellID)
+#         q = public_release_filter(q)
+#
+#         ps = q.all()
+#
+#         for pi in ps:
+#             ose_id = pi.OSEWellID
+#             pi.pods = []
+#             if ose_id:
+#                 url = 'https://services2.arcgis.com/qXZbWTdPDbTjl7Dy/arcgis/rest/services/' \
+#                       'OSE_PODs/FeatureServer/0/query?'\
+#                       f'where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*'
+#
+#                 pi.pod_url = url
+#
+#         return ps
 
 
 # ============= EOF =============================================

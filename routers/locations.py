@@ -32,9 +32,8 @@ import models
 import schemas
 from crud import (
     public_release_filter,
-    _read_pods,
     read_waterlevels_manual_query,
-    read_waterlevels_pressure_query,
+    read_waterlevels_pressure_query, read_well,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -144,13 +143,15 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
             PublicRelease=True,
         )
 
-    wells = _read_pods(pointid, db)
-
-    well = None
-    pods = []
-    if wells:
-        well = wells[0]
-        pods = well.pods
+    well = read_well(pointid, db)
+    # wells = _read_pods(pointid, db)
+    #
+    # # well = None
+    # # pods = []
+    # pod_url = ''
+    # if wells:
+    #     well = wells[0]
+    #     pod_url = well.pod_url
 
     fig = go.Figure()
     manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
@@ -180,7 +181,8 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
             "request": request,
             "location": loc.dict() if loc else {},
             "well": well,
-            "pods": pods,
+            'pod_url': well.pod_url,
+            # "pods": pods,
             "graphJSON": graphJSON,
         },
     )

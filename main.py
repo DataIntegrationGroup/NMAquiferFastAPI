@@ -25,16 +25,6 @@ import models
 import schemas
 from app import app
 
-from crud import (
-    read_waterlevels_manual_query,
-    public_release_filter,
-    _read_pods,
-    read_waterlevels_pressure_query,
-    read_locations,
-)
-
-import plotly
-import plotly.graph_objects as go
 
 from dependencies import get_db
 from routers import locations, wells, waterlevels, ngwmn, collab_net

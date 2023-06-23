@@ -22,7 +22,7 @@ from starlette.status import HTTP_200_OK
 
 import models
 import schemas
-from crud import _read_pods, public_release_filter
+from crud import public_release_filter
 from dependencies import get_db
 
 router = APIRouter()
@@ -41,12 +41,12 @@ def read_well(pointid: str = None, db: Session = Depends(get_db)):
         return Response(status_code=HTTP_200_OK)
 
 
-@router.get("/pod", response_model=List[schemas.Well])
-def read_pods(pointid: str = None, db: Session = Depends(get_db)):
-    pods = _read_pods(pointid, db)
-    if pods is None:
-        pods = Response(status_code=HTTP_200_OK)
-    return pods
+# @router.get("/pod", response_model=List[schemas.Well])
+# def read_pods(pointid: str = None, db: Session = Depends(get_db)):
+#     pods = _read_pods(pointid, db)
+#     if pods is None:
+#         pods = Response(status_code=HTTP_200_OK)
+#     return pods
 
 
 # ============= EOF =============================================
