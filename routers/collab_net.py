@@ -18,6 +18,7 @@ import io
 import json
 
 from fastapi import APIRouter, Depends
+from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
@@ -58,7 +59,15 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/waterlevels/csv")
-def read_waterlevels(db: Session = Depends(get_db)):
+async def read_waterlevels(db: Session = Depends(get_db)):
+    csv = await get_waterlevels_csv(db)
+    response = StreamingResponse(iter([csv]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
+    return response
+
+
+@cache(expire=600)
+async def get_waterlevels_csv(db):
     q = db.query(models.Location)
     q = q.join(models.ProjectLocations)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
@@ -81,7 +90,7 @@ def read_waterlevels(db: Session = Depends(get_db)):
     stream = io.StringIO()
     writer = csv.writer(stream)
     n = len(locations)
-    for i, l in enumerate(locations):
+    for i, l in enumerate(locations[:50]):
         print(f"getting waterlevels for {i}/{n}, {l.PointID}")
         waterlevels = read_waterlevels_manual_query(l.PointID, db)
         for wi in waterlevels:
@@ -98,11 +107,8 @@ def read_waterlevels(db: Session = Depends(get_db)):
                 )
             )
     writer.writerows(rows)
+    return stream.getvalue()
 
-    # stream.write('\n'.join([','.join(map(str, r)) for r in rows]))
-    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
-    return response
 
 
 @router.get("/locations/csv")

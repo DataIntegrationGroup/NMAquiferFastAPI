@@ -15,9 +15,12 @@
 # ===============================================================================
 import json
 
+import redis as redis
 from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi_pagination import add_pagination
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 
 from sqlalchemy.orm import Session
 
@@ -102,6 +105,15 @@ app.include_router(waterlevels.router)
 app.include_router(ngwmn.router)
 app.include_router(collab_net.router)
 add_pagination(app)
+
+
+
+
+@app.on_event("startup")
+async def startup_event():
+    db = redis.from_url('redis://localhost:6379')
+    FastAPICache.init(RedisBackend(db), prefix="fastapi-cache")
+
 
 if __name__ == "__main__":
     import uvicorn
