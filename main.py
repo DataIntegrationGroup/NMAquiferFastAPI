@@ -107,11 +107,9 @@ app.include_router(collab_net.router)
 add_pagination(app)
 
 
-
-
 @app.on_event("startup")
 async def startup_event():
-    db = redis.from_url('redis://localhost:6379')
+    db = redis.from_url("redis://localhost:6379")
     FastAPICache.init(RedisBackend(db), prefix="fastapi-cache")
 
 

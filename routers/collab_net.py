@@ -110,7 +110,6 @@ async def get_waterlevels_csv(db):
     return stream.getvalue()
 
 
-
 @router.get("/locations/csv")
 def read_locations_csv(db: Session = Depends(get_db)):
     stream = io.StringIO()
