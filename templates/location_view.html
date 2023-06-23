@@ -10,10 +10,22 @@
 {% block content %}
     <h1 style="text-align: center">NMBGMR Groundwater Network</h1>
     <h2 style="text-align: center">{{ location.PointID }}</h2>
-    <hr>
-    <div id='chart' class='chart'”></div>
-    <hr>
-    <div class="container">
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm">
+                <form>
+                    <button class="btn btn-primary" action="submit" formaction="/waterlevels/{{ location.PointID
+                            }}/csv">Download
+                        WaterLevels</button>
+                </form>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div id='chart' class='chart'”></div>
+        </div>
+        <hr>
         <div class="row">
             <div class="col-sm-4">
                 <table id="location_table" class="display compact">

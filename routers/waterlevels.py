@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import csv
+import io
+
 from fastapi import Depends, APIRouter
 from fastapi_pagination import Page, LimitOffsetPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy.orm import Session
+from starlette.responses import StreamingResponse
 
 import models
 from schemas import waterlevels
@@ -30,7 +34,7 @@ from dependencies import get_db
 router = APIRouter(prefix="/waterlevels", tags=["waterlevels"])
 
 
-# ============= EOF =============================================
+
 @router.get("/manual", response_model=Page[waterlevels.WaterLevels])
 @router.get(
     "/manual/limit-offset",
@@ -66,3 +70,41 @@ def read_waterlevels_pressure(pointid: str = None, db: Session = Depends(get_db)
 def read_waterlevels_acoustic(pointid: str = None, db: Session = Depends(get_db)):
     q = read_waterlevels_acoustic_query(pointid, db)
     return paginate(q)
+
+
+@router.get('/{pointid}/csv')
+def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
+    manual = read_waterlevels_manual_query(pointid, db).all()
+    acoustic = read_waterlevels_acoustic_query(pointid, db).all()
+    pressure = read_waterlevels_pressure_query(pointid, db).all()
+
+    rows = []
+    rows.append(['#DateMeasured', 'DepthToWater (ftbgs)'])
+    rows.append(['#Manual Water Levels'])
+
+    for mi in manual:
+        row = [mi.DateMeasured, mi.DepthToWaterBGS]
+        rows.append(row)
+
+    if acoustic:
+        rows.append(['#Manual Water Levels'])
+        for ai in acoustic:
+            row = [ai.DateMeasured, ai.DepthToWaterBGS]
+            rows.append(row)
+
+    if pressure:
+        rows.append(["#Pressure Water Levels"])
+        for pi in pressure:
+            row = [pi.DateMeasured, pi.DepthToWaterBGS]
+            rows.append(row)
+
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    writer.writerows(rows)
+
+    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = f"attachment; filename={pointid}_waterlevels.csv"
+    return response
+
+
+# ============= EOF =============================================
