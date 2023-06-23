@@ -1,56 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Location View</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-          rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-          crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-            crossorigin="anonymous"></script>
-
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-
+{% extends "base.html" %}
+{% block title %}Location View {{ location.PointID }}{% endblock %}
+{% block head %}
+    {{ super() }}
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
-    <style>
-        body { margin: 0; padding: 0; }
-        {##map { position: absolute; top: 0; bottom: 0; width: 100%; }#}
-    </style>
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
-            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>    <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+{% endblock %}
 
-</head>
+{% block content %}
+    <h1 style="text-align: center">NMBGMR Groundwater Network</h1>
+    <h2 style="text-align: center">{{ location.PointID }}</h2>
+    <hr>
+    <div id='chart' class='chart'”></div>
+    <hr>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <table id="location_table" class="display compact">
+                    <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AlternateSiteID</td>
+                            <td>{{ location.AlternateSiteID }}</td>
+                        </tr>
+                        <tr>
+                            <td>Elevation (ft)</td>
+                            <td>{{ location.geometry.coordinates[2]|round(2)}}</td>
+                        </tr>
+                        <tr>
+                            <td>Formation</td>
+                            <td>{{ well.formation }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-sm-4">
+                <div id="map" style="width: 100%; height: 400px;"></div>
+            </div>
+            <div class="col-sm-4">
+                <h1>{{well.OSEWellID}}</h1>
+                <a id='water_right'>Water Right</a>
+                <table id="pod_table" class="display compact">
+                    <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
 
-<body>
-<h1>{{ location.PointID }}</h1>
-<table class="table table-sm">
+    {# chart loading script #}
+    <script type='text/javascript'>
+        var graphs = {{ graphJSON | safe }}
+            Plotly.plot('chart',graphs,{});
+    </script>
 
-    <tr>
-        <td>AlternateSiteID</td>
-        <td>{{ location.AlternateSiteID }}</td>
-    </tr>
-    <tr>
-        <td>Elevation</td>
-        <td>{{ location.geometry.coordinates[2]|round(2)}}</td>
-    </tr>
-        <td>Formation</td>
-        <td>{{ well.formation }}</td>
-    <tr>
 
-    </tr>
-</table>
-
-<hr>
-<div id='chart' class='chart'”></div>
-<script type='text/javascript'>
-    var graphs = {{ graphJSON | safe }}
-    Plotly.plot('chart',graphs,{});
-</script>
-<hr>
-<div id="map" style="width: 100%; height: 400px;"></div>
+    {# map loading script #}
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';
         const map = new mapboxgl.Map({
@@ -95,49 +109,47 @@
         });
     </script>
 
-<hr>
-<h1>{{well.OSEWellID}}</h1>
-<a id='water_right'>Water Right</a>
-<table id="pod_table" class="display compact">
-    <thead>
-        <tr>
-            <th>Attribute</th>
-            <th>Value</th>
-        </tr>
-    </thead>
-</table>
 
-</body>
+    {#data table loading script#}
+    <script>
 
-<script>
-    $('#pod_table').DataTable( {
-        paging: false,
-        searching: false,
-        scrollY: 300,
-        info: false,
-        ajax:
-            {
-                url: '{{ pod_url |safe }}',
-                dataSrc: function(d){
+        $('#location_table').DataTable({
+            paging: false,
+            searching: false,
+            scrollY: 300,
+            info: false,
+            {#columns: [#}
+            {#    { data: 'name'},#}
+            {#    { data: 'value' },#}
+            {#]#}
+        })
 
-                    let pod = d['features'][0]['attributes']
+        $('#pod_table').DataTable( {
+            paging: false,
+            searching: false,
+            scrollY: 300,
+            info: false,
+            ajax:
+                {
+                    url: '{{ pod_url |safe }}',
+                    dataSrc: function(d){
+                        let pod = d['features'][0]['attributes']
 
-                    $('#water_right').attr('href', pod['nmwrrs_wrs'])
+                        $('#water_right').attr('href', pod['nmwrrs_wrs'])
 
-                    return Object.keys(pod).map(function(key) {
-                        return {'name': key, 'value': pod[key]}
-                    })
-                }
-            },
-        columns: [
-            { data: 'name'},
-            { data: 'value' },
-        ]
-    } );
-</script>
-
-
-<footer>
+                        return Object.keys(pod).map(function(key) {
+                            return {'name': key, 'value': pod[key]}
+                        })
+                    }
+                },
+            columns: [
+                { data: 'name'},
+                { data: 'value' },
+            ]
+        } );
+    </script>
+{% endblock %}
+{% block footer %}
     <bold>Disclaimer:</bold><br/>
     <p>
         At NMBGMR, we use different tools to collect groundwater level measurements,
@@ -157,7 +169,5 @@
     <p>
         For more information on this project contact: <a href="mailto: stacy.timmons@nmt.edu">Stacy Timmons</a>
     </p>
-
-</footer>
-
-</html>
+    {{ super() }}
+{% endblock %}
