@@ -35,7 +35,8 @@ from crud import (
     public_release_filter,
     read_waterlevels_manual_query,
     read_waterlevels_pressure_query,
-    read_well, read_ose_pod,
+    read_well,
+    read_ose_pod,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -102,7 +103,6 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
         loc = Response(status_code=HTTP_200_OK)
         return loc
     else:
-
         well = read_well(pointid, db)
         pod, pod_url = read_ose_pod(well.OSEWellID)
 
@@ -110,18 +110,22 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
         loc = schemas.Location.from_orm(loc)
         well = schemas.Well.from_orm(well)
 
-        payload = {'location': loc.dict(),
-                   'well': well.dict(),
-                   'pod': {'properties': pod['features'][0]['attributes'],
-                           'source_url': pod_url,}}
+        payload = {
+            "location": loc.dict(),
+            "well": well.dict(),
+            "pod": {
+                "properties": pod["features"][0]["attributes"],
+                "source_url": pod_url,
+            },
+        }
 
         safe_json(payload)
         json.dump(payload, stream, indent=2)
 
-        response = StreamingResponse(iter([stream.getvalue()]), media_type="application/json")
-        response.headers[
-            "Content-Disposition"
-        ] = f"attachment; filename={pointid}.json"
+        response = StreamingResponse(
+            iter([stream.getvalue()]), media_type="application/json"
+        )
+        response.headers["Content-Disposition"] = f"attachment; filename={pointid}.json"
         return response
 
 
@@ -140,7 +144,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-        request: Request, pointid: str, db: Session = Depends(get_db)
+    request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -241,5 +245,6 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
+
 
 # ============= EOF =============================================
