@@ -109,8 +109,13 @@ add_pagination(app)
 
 @app.on_event("startup")
 async def startup_event():
-    db = redis.from_url("redis://localhost:6379")
+    # db = redis.from_url("redis://localhost:6379")
+    # print('ddd', db)
+    pool = redis.ConnectionPool(host="localhost", port=6379, db=0)
+    db = redis.Redis(connection_pool=pool)
     FastAPICache.init(RedisBackend(db), prefix="fastapi-cache")
+
+
 
 
 if __name__ == "__main__":

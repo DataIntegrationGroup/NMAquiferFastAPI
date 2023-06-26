@@ -16,19 +16,21 @@
 import csv
 import io
 import json
+import os
+import threading
+import time
 
 from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-from starlette.responses import StreamingResponse
+from starlette.responses import StreamingResponse, FileResponse
 from starlette.templating import Jinja2Templates
 
 import models
 import schemas
 from crud import public_release_filter, read_waterlevels_manual_query
 from dependencies import get_db
-from routers import csv_response, json_response
 
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
 from pathlib import Path
@@ -37,30 +39,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 
+
+
 @router.get("/map")
 def map_view(request: Request, db: Session = Depends(get_db)):
+    # ls = get_locations(db)
+    # def make_point(loc, well):
+    #     return {
+    #         "type": "Feature",
+    #         "properties": {"name": f"Point {loc.PointID}"},
+    #         "geometry": loc.geometry,
+    #     }
+
     return templates.TemplateResponse(
         "collabnet_map_view.html",
         {
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 6,
-            "data_url": "/collabnet/locations",  # use ajax so that the client fetches the data via API
+            "data_url": "/collabnet/locations",
             "nlocations": get_nlocations(db),
         },
     )
 
 
 @router.get("/waterlevels/csv")
-async def read_waterlevels():
-    csv = await get_waterlevels_csv_from_db()
-    return csv_response("waterlevels.csv", csv)
+async def read_waterlevels(db: Session = Depends(get_db)):
+    if not os.path.isfile("waterlevels.csv"):
+        txt = get_waterlevels_csv(db)
+        with open("waterlevels.csv", "w") as fp:
+            fp.write(txt)
+
+    return FileResponse("waterlevels.csv")
 
 
-@cache(expire=6000)
-async def get_waterlevels_csv_from_db():
-    db = next(get_db())
-
+def get_waterlevels_csv(db):
     q = db.query(models.Location)
     q = q.join(models.ProjectLocations)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
@@ -132,18 +145,24 @@ def read_locations_csv(db: Session = Depends(get_db)):
         )
         writer.writerow(row)
 
-    return csv_response("locations.csv", stream.getvalue())
-    # response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-    # response.headers["Content-Disposition"] = "attachment; filename=locations.csv"
-    #
-    # return response
+    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=locations.csv"
+
+    return response
 
 
 @router.get("/locations/geojson")
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = get_locations(db)
     content = locations_geojson(ls)
-    return json_response("locations.json", content)
+
+    stream = io.StringIO()
+    stream.write(json.dumps(content))
+    response = StreamingResponse(
+        iter([stream.getvalue()]), media_type="application/json"
+    )
+    response.headers["Content-Disposition"] = "attachment; filename=locations.json"
+    return response
 
 
 @router.get("/locations", response_model=schemas.LocationFeatureCollection)
@@ -192,6 +211,28 @@ def locations_geojson(locations):
     }
 
     return content
+
+
+def waterlevels_loop():
+    evt = threading.Event()
+    while 1:
+
+        if os.path.isfile("waterlevels.csv"):
+            s = os.stat('waterlevels.csv')
+            if time.time() - s.st_mtime < 60*60*24:
+                continue
+
+        db = next(get_db())
+        txt = get_waterlevels_csv(db)
+        with open("waterlevels.csv", "w") as fp:
+            fp.write(txt)
+
+        evt.wait(1)
+
+
+
+t = threading.Thread(target=waterlevels_loop)
+t.start()
 
 
 # ============= EOF =============================================
