@@ -39,8 +39,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 
-
-
 @router.get("/map")
 def map_view(request: Request, db: Session = Depends(get_db)):
     # ls = get_locations(db)
@@ -216,10 +214,9 @@ def locations_geojson(locations):
 def waterlevels_loop():
     evt = threading.Event()
     while 1:
-
         if os.path.isfile("waterlevels.csv"):
-            s = os.stat('waterlevels.csv')
-            if time.time() - s.st_mtime < 60*60*24:
+            s = os.stat("waterlevels.csv")
+            if time.time() - s.st_mtime < 60 * 60 * 24:
                 continue
 
         db = next(get_db())
@@ -228,7 +225,6 @@ def waterlevels_loop():
             fp.write(txt)
 
         evt.wait(1)
-
 
 
 t = threading.Thread(target=waterlevels_loop)

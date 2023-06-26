@@ -116,8 +116,6 @@ async def startup_event():
     FastAPICache.init(RedisBackend(db), prefix="fastapi-cache")
 
 
-
-
 if __name__ == "__main__":
     import uvicorn
 
