@@ -39,7 +39,6 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 @router.get("/map")
 def map_view(request: Request, db: Session = Depends(get_db)):
-
     return templates.TemplateResponse(
         "collabnet_map_view.html",
         {
