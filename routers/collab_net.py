@@ -59,7 +59,7 @@ async def read_waterlevels():
 
 
 def get_waterlevels_csv_from_db():
-    db = get_db()
+    db = next(get_db())
 
     q = db.query(models.Location)
     q = q.join(models.ProjectLocations)
