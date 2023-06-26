@@ -52,13 +52,13 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/waterlevels/csv")
-@cache(expire=6000)
 async def read_waterlevels():
-    csv = get_waterlevels_csv_from_db()
+    csv = await get_waterlevels_csv_from_db()
     return csv_response("waterlevels.csv", csv)
 
 
-def get_waterlevels_csv_from_db():
+@cache(expire=6000)
+async def get_waterlevels_csv_from_db():
     db = next(get_db())
 
     q = db.query(models.Location)
