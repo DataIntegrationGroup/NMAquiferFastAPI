@@ -52,12 +52,12 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/waterlevels/csv")
+@cache(expire=6000)
 async def read_waterlevels():
     csv = get_waterlevels_csv_from_db()
     return csv_response("waterlevels.csv", csv)
 
 
-@cache(expire=6000)
 def get_waterlevels_csv_from_db():
     db = get_db()
 
