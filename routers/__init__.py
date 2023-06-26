@@ -17,7 +17,6 @@ import json
 
 from starlette.responses import StreamingResponse
 
-
 def json_response(filename, content):
     if not filename.endswith(".json"):
         filename = f"{filename}.json"
@@ -25,28 +24,15 @@ def json_response(filename, content):
     if isinstance(content, dict):
         content = json.dumps(content)
 
-    response = StreamingResponse(
-        [
-            content,
-        ],
-        media_type="application/json",
-    )
+    response = StreamingResponse(iter([content]), media_type="application/json")
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
     return response
-
 
 def csv_response(filename, content):
     if not filename.endswith(".csv"):
         filename = f"{filename}.csv"
 
-    response = StreamingResponse(
-        [
-            content,
-        ],
-        media_type="text/csv",
-    )
+    response = StreamingResponse(iter([content]), media_type="text/csv")
     response.headers["Content-Disposition"] = f"attachment; filename={filename}"
     return response
-
-
 # ============= EOF =============================================
