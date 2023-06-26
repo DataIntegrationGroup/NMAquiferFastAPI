@@ -28,6 +28,7 @@ import models
 import schemas
 from crud import public_release_filter, read_waterlevels_manual_query
 from dependencies import get_db
+from routers import csv_response, json_response
 
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
 from pathlib import Path
@@ -38,13 +39,6 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 @router.get("/map")
 def map_view(request: Request, db: Session = Depends(get_db)):
-    # ls = get_locations(db)
-    # def make_point(loc, well):
-    #     return {
-    #         "type": "Feature",
-    #         "properties": {"name": f"Point {loc.PointID}"},
-    #         "geometry": loc.geometry,
-    #     }
 
     return templates.TemplateResponse(
         "collabnet_map_view.html",
@@ -52,22 +46,22 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 6,
-            "data_url": "/collabnet/locations",
+            "data_url": "/collabnet/locations",  # use ajax so that the client fetches the data via API
             "nlocations": get_nlocations(db),
         },
     )
 
 
 @router.get("/waterlevels/csv")
-async def read_waterlevels(db: Session = Depends(get_db)):
-    csv = await get_waterlevels_csv(db)
-    response = StreamingResponse(iter([csv]), media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
-    return response
+async def read_waterlevels():
+    csv = get_waterlevels_csv_from_db()
+    return csv_response("waterlevels.csv", csv)
 
 
-@cache(expire=600)
-async def get_waterlevels_csv(db):
+@cache(expire=6000)
+def get_waterlevels_csv_from_db():
+    db = get_db()
+
     q = db.query(models.Location)
     q = q.join(models.ProjectLocations)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
@@ -139,24 +133,18 @@ def read_locations_csv(db: Session = Depends(get_db)):
         )
         writer.writerow(row)
 
-    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=locations.csv"
-
-    return response
+    return csv_response("locations.csv", stream.getvalue())
+    # response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
+    # response.headers["Content-Disposition"] = "attachment; filename=locations.csv"
+    #
+    # return response
 
 
 @router.get("/locations/geojson")
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = get_locations(db)
     content = locations_geojson(ls)
-
-    stream = io.StringIO()
-    stream.write(json.dumps(content))
-    response = StreamingResponse(
-        iter([stream.getvalue()]), media_type="application/json"
-    )
-    response.headers["Content-Disposition"] = "attachment; filename=locations.json"
-    return response
+    return json_response("locations.json", content)
 
 
 @router.get("/locations", response_model=schemas.LocationFeatureCollection)
