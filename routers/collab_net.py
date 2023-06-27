@@ -30,7 +30,11 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import public_release_filter, read_waterlevels_manual_query, get_waterlevels_csv_stream
+from crud import (
+    public_release_filter,
+    read_waterlevels_manual_query,
+    get_waterlevels_csv_stream,
+)
 from dependencies import get_db
 from routers import csv_response, json_response
 
@@ -75,7 +79,6 @@ async def read_waterlevels(db: Session = Depends(get_db)):
     response = StreamingResponse(stream, media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
     return response
-
 
 
 # def get_waterlevels_csv_old(db):
