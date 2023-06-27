@@ -23,14 +23,16 @@ import time
 from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
+from sqlalchemy.testing import in_
 from starlette.requests import Request
 from starlette.responses import StreamingResponse, FileResponse
 from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import public_release_filter, read_waterlevels_manual_query
+from crud import public_release_filter, read_waterlevels_manual_query, get_waterlevels_csv_stream
 from dependencies import get_db
+from routers import csv_response, json_response
 
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
 from pathlib import Path
@@ -63,55 +65,60 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/waterlevels/csv")
 async def read_waterlevels(db: Session = Depends(get_db)):
-    if not os.path.isfile("waterlevels.csv"):
-        txt = get_waterlevels_csv(db)
-        with open("waterlevels.csv", "w") as fp:
-            fp.write(txt)
+    # if not os.path.isfile("waterlevels.csv"):
+    #     txt = get_waterlevels_csv(db)
+    #     with open("waterlevels.csv", "w") as fp:
+    #         fp.write(txt)
+    #
+    # return FileResponse("waterlevels.csv")
+    stream = get_waterlevels_csv_stream(db)
+    response = StreamingResponse(stream, media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
+    return response
 
-    return FileResponse("waterlevels.csv")
 
 
-def get_waterlevels_csv(db):
-    q = db.query(models.Location)
-    q = q.join(models.ProjectLocations)
-    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
-    q = public_release_filter(q)
-    locations = q.all()
-
-    rows = [
-        (
-            "PointID",
-            "DateMeasured",
-            "DepthToWaterBGS",
-            "MeasurementMethod",
-            "DataSource",
-            "MeasuringAgency",
-            "LevelStatus",
-            "DataQuality",
-        )
-    ]
-
-    stream = io.StringIO()
-    writer = csv.writer(stream)
-    n = len(locations)
-    for i, l in enumerate(locations):
-        print(f"getting waterlevels for {i}/{n}, {l.PointID}")
-        waterlevels = read_waterlevels_manual_query(l.PointID, db)
-        for wi in waterlevels:
-            rows.append(
-                (
-                    l.PointID,
-                    wi.DateMeasured,
-                    wi.DepthToWaterBGS,
-                    wi.measurement_method,
-                    wi.data_source,
-                    wi.MeasuringAgency,
-                    wi.level_status,
-                    wi.data_quality,
-                )
-            )
-    writer.writerows(rows)
-    return stream.getvalue()
+# def get_waterlevels_csv_old(db):
+#     q = db.query(models.Location)
+#     q = q.join(models.ProjectLocations)
+#     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+#     q = public_release_filter(q)
+#     locations = q.all()
+#
+#     rows = [
+#         (
+#             "PointID",
+#             "DateMeasured",
+#             "DepthToWaterBGS",
+#             "MeasurementMethod",
+#             "DataSource",
+#             "MeasuringAgency",
+#             "LevelStatus",
+#             "DataQuality",
+#         )
+#     ]
+#
+#     stream = io.StringIO()
+#     writer = csv.writer(stream)
+#     n = len(locations)
+#     for i, l in enumerate(locations):
+#         print(f"getting waterlevels for {i}/{n}, {l.PointID}")
+#         waterlevels = read_waterlevels_manual_query(l.PointID, db)
+#         for wi in waterlevels:
+#             rows.append(
+#                 (
+#                     l.PointID,
+#                     wi.DateMeasured,
+#                     wi.DepthToWaterBGS,
+#                     wi.measurement_method,
+#                     wi.data_source,
+#                     wi.MeasuringAgency,
+#                     wi.level_status,
+#                     wi.data_quality,
+#                 )
+#             )
+#     writer.writerows(rows)
+#     return stream.getvalue()
 
 
 @router.get("/locations/csv")
@@ -136,31 +143,27 @@ def read_locations_csv(db: Session = Depends(get_db)):
             l.PointID,
             lat,
             lon,
-            # l.geometry.coordinates[1],
-            # l.geometry.coordinates[0],
             f"{l.Altitude :0.2f}",
             f"{w.WellDepth or 0:0.2f}",
         )
         writer.writerow(row)
 
-    response = StreamingResponse(iter([stream.getvalue()]), media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=locations.csv"
-
-    return response
+    return csv_response("locations", stream.getvalue())
 
 
 @router.get("/locations/geojson")
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = get_locations(db)
     content = locations_geojson(ls)
+    return json_response("locations", content)
 
-    stream = io.StringIO()
-    stream.write(json.dumps(content))
-    response = StreamingResponse(
-        iter([stream.getvalue()]), media_type="application/json"
-    )
-    response.headers["Content-Disposition"] = "attachment; filename=locations.json"
-    return response
+    # stream = io.StringIO()
+    # stream.write(json.dumps(content))
+    # response = StreamingResponse(
+    #     iter([stream.getvalue()]), media_type="application/json"
+    # )
+    # response.headers["Content-Disposition"] = "attachment; filename=locations.json"
+    # return response
 
 
 @router.get("/locations", response_model=schemas.LocationFeatureCollection)
@@ -211,24 +214,24 @@ def locations_geojson(locations):
     return content
 
 
-def waterlevels_loop():
-    evt = threading.Event()
-    while 1:
-        if os.path.isfile("waterlevels.csv"):
-            s = os.stat("waterlevels.csv")
-            if time.time() - s.st_mtime < 60 * 60 * 24:
-                continue
-
-        db = next(get_db())
-        txt = get_waterlevels_csv(db)
-        with open("waterlevels.csv", "w") as fp:
-            fp.write(txt)
-
-        evt.wait(1)
-
-
-t = threading.Thread(target=waterlevels_loop)
-t.start()
+# def waterlevels_loop():
+#     evt = threading.Event()
+#     while 1:
+#         if os.path.isfile("waterlevels.csv"):
+#             s = os.stat("waterlevels.csv")
+#             if time.time() - s.st_mtime < 60 * 60 * 24:
+#                 continue
+#
+#         db = next(get_db())
+#         txt = get_waterlevels_csv(db)
+#         with open("waterlevels.csv", "w") as fp:
+#             fp.write(txt)
+#
+#         evt.wait(1)
+#
+#
+# t = threading.Thread(target=waterlevels_loop)
+# t.start()
 
 
 # ============= EOF =============================================

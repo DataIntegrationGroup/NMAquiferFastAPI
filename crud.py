@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import csv
+import io
+
 import models
 import requests
 
@@ -93,6 +96,42 @@ def read_ose_pod(ose_id):
     return requests.get(url).json(), url
 
 
+def get_waterlevels_csv_stream(db):
+    q = db.query(models.WaterLevels)
+    q = q.join(models.Well)
+    q = q.join(models.Location)
+    q = q.join(models.ProjectLocations)
+    q = public_release_filter(q)
+    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+    q = q.order_by(models.WaterLevels.PointID)
+    header = (
+        "PointID",
+        "DateMeasured",
+        "DepthToWaterBGS",
+        "MeasurementMethod",
+        "DataSource",
+        "MeasuringAgency",
+        "LevelStatus",
+        "DataQuality",
+    )
+
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    writer.writerow(header)
+    for record in q.all():
+        row = (
+            record.PointID,
+            record.DateMeasured,
+            record.DepthToWaterBGS,
+            record.measurement_method,
+            record.data_source,
+            record.MeasuringAgency,
+            record.level_status,
+            record.data_quality,
+        )
+
+        writer.writerows(row)
+    return stream
 # def _read_pods(pointid, db):
 #     q = db.query(models.Well)
 #     if pointid:
