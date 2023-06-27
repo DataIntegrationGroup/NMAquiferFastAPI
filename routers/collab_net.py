@@ -76,7 +76,7 @@ async def read_waterlevels(db: Session = Depends(get_db)):
     #
     # return FileResponse("waterlevels.csv")
     stream = get_waterlevels_csv_stream(db)
-    return csv_response('waterlevels.csv', stream)
+    return csv_response("waterlevels.csv", stream)
     # response = StreamingResponse(iter([stream]), media_type="text/csv")
     # response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
     # return response
