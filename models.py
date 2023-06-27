@@ -179,7 +179,7 @@ class Well(Base):
 
     lu_formation = relationship("LU_Formations", backref="wells", uselist=False)
     location = relationship("Location", backref="well", uselist=False)
-    waterlevels = relationship("WaterLevels", backref="well", uselist=False)
+    manual_waterlevels = relationship("WaterLevels", backref="well", uselist=False)
 
     @property
     def pod_url(self):
@@ -210,11 +210,11 @@ class MeasurementMixin(object):
 
     @declared_attr
     def lu_measurement_method(cls):
-        return relationship("LU_MeasurementMethod", uselist=False)
+        return relationship("LU_MeasurementMethod", uselist=False, lazy="joined")
 
     @declared_attr
     def lu_data_source(cls):
-        return relationship("LU_DataSource", uselist=False)
+        return relationship("LU_DataSource", uselist=False, lazy="joined")
 
     @property
     def measurement_method(self):
@@ -271,11 +271,11 @@ class WaterLevels(Base, MeasurementMixin):
 
     @declared_attr
     def lu_level_status(cls):
-        return relationship("LU_LevelStatus", uselist=False)
+        return relationship("LU_LevelStatus", uselist=False, lazy="joined")
 
     @declared_attr
     def lu_data_quality(cls):
-        return relationship("LU_DataQuality", uselist=False)
+        return relationship("LU_DataQuality", uselist=False, lazy="joined")
 
     @property
     def level_status(self):

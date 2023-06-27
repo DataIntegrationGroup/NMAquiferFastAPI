@@ -97,13 +97,14 @@ def read_ose_pod(ose_id):
 
 
 def get_waterlevels_csv_stream(db):
-    q = db.query(models.WaterLevels)
+    q = db.query(models.WaterLevels, models.Well)
     q = q.join(models.Well)
     q = q.join(models.Location)
     q = q.join(models.ProjectLocations)
+
     q = public_release_filter(q)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
-    q = q.order_by(models.WaterLevels.PointID)
+    q = q.order_by(models.Location.PointID)
     header = (
         "PointID",
         "DateMeasured",
@@ -118,10 +119,15 @@ def get_waterlevels_csv_stream(db):
     stream = io.StringIO()
     writer = csv.writer(stream)
     writer.writerow(header)
-    for record in q.all():
+    n = q.count()
+    for i, (record, well) in enumerate(q.all()):
+        print(f"{i + 1}/{n}")
+        if record.DateMeasured is None:
+            continue
+
         row = (
-            record.PointID,
-            record.DateMeasured,
+            well.PointID,
+            record.DateMeasured.isoformat(),
             record.DepthToWaterBGS,
             record.measurement_method,
             record.data_source,
@@ -129,9 +135,8 @@ def get_waterlevels_csv_stream(db):
             record.level_status,
             record.data_quality,
         )
-
-        writer.writerows(row)
-    return stream
+        writer.writerow(map(str, row))
+    return stream.getvalue()
 
 
 # def _read_pods(pointid, db):
