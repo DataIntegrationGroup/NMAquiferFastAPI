@@ -18,9 +18,7 @@
             z-index: 1;
             }
         #statstable {
-            {#position: absolute; top: 0; left: 0;#}
-
-            padding: 10px; background: rgba(38, 191, 89, 0.5)
+            padding: 10px;
         }
         #menu {
                 position: absolute;
@@ -103,11 +101,13 @@
     <div class="row">
         <div class="col">
             <div id="downloads" role="group" class="btn-group">
-                <button class="btn btn-outline-primary" id='download_waterlevels'>Download WaterLevels CSV</button>
-                <button class="btn btn-outline-primary" type="submit" formaction="/collabnet/locations/geojson">Download
-                    Locations</button>
-                <button class="btn btn-outline-primary" type="submit" formaction="/collabnet/locations/csv">Download Locations
-                    CSV</button>
+                <form>
+                    <button class="btn btn-outline-primary" id='download_waterlevels'>Download WaterLevels CSV</button>
+                    <button class="btn btn-outline-primary" type="submit" formaction="/collabnet/locations/geojson">Download
+                        Locations</button>
+                    <button class="btn btn-outline-primary" type="submit" formaction="/collabnet/locations/csv">Download Locations
+                        CSV</button>
+                </form>
             </div>
             <div id="mapcontainer">
                 <div id="map"></div>
@@ -144,12 +144,14 @@
         </div>
         <div class="col">
             <div class="row">
-                <div id="statstable">
-                </div>
+
                 <h2>Statistics</h2>
-                <table>
+                <table class="display compact" id="statstable">
                     <tr>
                         <td>N. Wells</td><td>{{ nlocations }}</td>
+                    </tr>
+                    <tr>
+                        <td>N. Waterlevels</td><td>{{ nwaterlevels }}</td>
                     </tr>
                 </table>
             </div>
@@ -174,6 +176,25 @@
 
     <div id="loader"></div>
 
+    <script>
+    // load stats table
+
+    $('#statstable').DataTable({
+        "paging": false,
+        "searching": false,
+        "info": false,
+        "ordering": false,
+        "ajax": {
+            "url": "/collabnet/stats",
+            "dataSrc": ""
+        },
+        "columns": [
+            { "data": "name" },
+            { "data": "value" }
+        ]
+    });
+
+    </script>
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';
 

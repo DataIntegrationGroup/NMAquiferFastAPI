@@ -31,9 +31,7 @@ from starlette.templating import Jinja2Templates
 import models
 import schemas
 from crud import (
-    public_release_filter,
-    read_waterlevels_manual_query,
-    get_waterlevels_csv_stream,
+    public_release_filter
 )
 from dependencies import get_db
 from routers import csv_response, json_response
@@ -54,6 +52,8 @@ def map_view(request: Request, db: Session = Depends(get_db)):
     #         "properties": {"name": f"Point {loc.PointID}"},
     #         "geometry": loc.geometry,
     #     }
+    stats = [{'name': 'N. Wells', 'value': get_nlocations(db)},
+             {'name': 'N. Water Levels', 'value': get_nwaterlevels(db)}]
 
     return templates.TemplateResponse(
         "collabnet_map_view.html",
@@ -62,67 +62,24 @@ def map_view(request: Request, db: Session = Depends(get_db)):
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 6,
             "data_url": "/collabnet/locations",
-            "nlocations": get_nlocations(db),
+            # 'stats': stats
+            # "nlocations": get_nlocations(db),
+            # 'nwaterlevels': get_nwaterlevels(db)
         },
     )
 
 
+@router.get("/stats")
+async def read_stats(db: Session = Depends(get_db)):
+    return [{'name': 'N. Wells', 'value': get_nlocations(db)},
+            {'name': 'N. Water levels', 'value': get_nwaterlevels(db)}]
+
+
 @router.get("/waterlevels/csv")
 async def read_waterlevels(db: Session = Depends(get_db)):
-    # if not os.path.isfile("waterlevels.csv"):
-    #     txt = get_waterlevels_csv(db)
-    #     with open("waterlevels.csv", "w") as fp:
-    #         fp.write(txt)
-    #
-    # return FileResponse("waterlevels.csv")
-    stream = get_waterlevels_csv_stream(db)
+    stream = get_waterlevels_csv(db)
+
     return csv_response("waterlevels.csv", stream)
-    # response = StreamingResponse(iter([stream]), media_type="text/csv")
-    # response.headers["Content-Disposition"] = "attachment; filename=waterlevels.csv"
-    # return response
-
-
-# def get_waterlevels_csv_old(db):
-#     q = db.query(models.Location)
-#     q = q.join(models.ProjectLocations)
-#     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
-#     q = public_release_filter(q)
-#     locations = q.all()
-#
-#     rows = [
-#         (
-#             "PointID",
-#             "DateMeasured",
-#             "DepthToWaterBGS",
-#             "MeasurementMethod",
-#             "DataSource",
-#             "MeasuringAgency",
-#             "LevelStatus",
-#             "DataQuality",
-#         )
-#     ]
-#
-#     stream = io.StringIO()
-#     writer = csv.writer(stream)
-#     n = len(locations)
-#     for i, l in enumerate(locations):
-#         print(f"getting waterlevels for {i}/{n}, {l.PointID}")
-#         waterlevels = read_waterlevels_manual_query(l.PointID, db)
-#         for wi in waterlevels:
-#             rows.append(
-#                 (
-#                     l.PointID,
-#                     wi.DateMeasured,
-#                     wi.DepthToWaterBGS,
-#                     wi.measurement_method,
-#                     wi.data_source,
-#                     wi.MeasuringAgency,
-#                     wi.level_status,
-#                     wi.data_quality,
-#                 )
-#             )
-#     writer.writerows(rows)
-#     return stream.getvalue()
 
 
 @router.get("/locations/csv")
@@ -182,6 +139,59 @@ def get_nlocations(db: Session = Depends(get_db)):
     return q.count()
 
 
+def get_nwaterlevels(db: Session = Depends(get_db)):
+    q = get_waterlevels_query(db)
+    return q.count()
+
+
+def get_waterlevels_query(db):
+    q = db.query(models.WaterLevels, models.Well)
+    q = q.join(models.Well)
+    q = q.join(models.Location)
+    q = q.join(models.ProjectLocations)
+
+    q = public_release_filter(q)
+    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+    q = q.order_by(models.Location.PointID)
+    return q
+
+
+def get_waterlevels_csv(db):
+    q = get_waterlevels_query(db)
+    header = (
+        "PointID",
+        "DateMeasured",
+        "DepthToWaterBGS",
+        "MeasurementMethod",
+        "DataSource",
+        "MeasuringAgency",
+        "LevelStatus",
+        "DataQuality",
+    )
+
+    stream = io.StringIO()
+    writer = csv.writer(stream)
+    writer.writerow(header)
+    n = q.count()
+    for i, (record, well) in enumerate(q.all()):
+        print(f"{i + 1}/{n}")
+        if record.DateMeasured is None:
+            continue
+
+        row = (
+            well.PointID,
+            record.DateMeasured.isoformat(),
+            record.DepthToWaterBGS,
+            record.measurement_method,
+            record.data_source,
+            record.MeasuringAgency,
+            record.level_status,
+            record.data_quality,
+        )
+        writer.writerow(map(str, row))
+    return stream.getvalue()
+
+
 def get_locations(db: Session = Depends(get_db)):
     q = get_locations_query(db)
     try:
@@ -216,7 +226,6 @@ def locations_geojson(locations):
     }
 
     return content
-
 
 # def waterlevels_loop():
 #     evt = threading.Event()
