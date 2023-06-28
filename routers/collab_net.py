@@ -30,9 +30,7 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import (
-    public_release_filter
-)
+from crud import public_release_filter
 from dependencies import get_db
 from routers import csv_response, json_response
 
@@ -52,8 +50,10 @@ def map_view(request: Request, db: Session = Depends(get_db)):
     #         "properties": {"name": f"Point {loc.PointID}"},
     #         "geometry": loc.geometry,
     #     }
-    stats = [{'name': 'N. Wells', 'value': get_nlocations(db)},
-             {'name': 'N. Water Levels', 'value': get_nwaterlevels(db)}]
+    stats = [
+        {"name": "N. Wells", "value": get_nlocations(db)},
+        {"name": "N. Water Levels", "value": get_nwaterlevels(db)},
+    ]
 
     return templates.TemplateResponse(
         "collabnet_map_view.html",
@@ -71,8 +71,10 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/stats")
 async def read_stats(db: Session = Depends(get_db)):
-    return [{'name': 'N. Wells', 'value': get_nlocations(db)},
-            {'name': 'N. Water levels', 'value': get_nwaterlevels(db)}]
+    return [
+        {"name": "N. Wells", "value": get_nlocations(db)},
+        {"name": "N. Water levels", "value": get_nwaterlevels(db)},
+    ]
 
 
 @router.get("/waterlevels/csv")
@@ -226,6 +228,7 @@ def locations_geojson(locations):
     }
 
     return content
+
 
 # def waterlevels_loop():
 #     evt = threading.Event()

@@ -96,8 +96,6 @@ def read_ose_pod(ose_id):
     return requests.get(url).json(), url
 
 
-
-
 # def _read_pods(pointid, db):
 #     q = db.query(models.Well)
 #     if pointid:
