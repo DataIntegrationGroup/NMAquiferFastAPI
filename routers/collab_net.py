@@ -72,14 +72,16 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/stats")
 async def read_stats(db: Session = Depends(get_db)):
-    return [{'name': 'N. Wells', 'value': get_nlocations(db)},
-            {'name': 'N. Water levels', 'value': get_nwaterlevels(db)}]
+    return [
+        {"name": "N. Wells", "value": get_nlocations(db)},
+        {"name": "N. Water levels", "value": get_nwaterlevels(db)},
+    ]
 
 
 @router.get("/contributors")
 async def read_contributions(db: Session = Depends(get_db)):
     cons = get_contributors(db)
-    return [{'name': n, 'contributions': c} for n, c in cons]
+    return [{"name": n, "contributions": c} for n, c in cons]
 
 
 @router.get("/waterlevels/csv")
@@ -243,6 +245,7 @@ def locations_geojson(locations):
     }
 
     return content
+
 
 # def waterlevels_loop():
 #     evt = threading.Event()
