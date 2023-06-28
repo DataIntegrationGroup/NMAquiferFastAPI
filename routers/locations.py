@@ -214,12 +214,10 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     ).all()
     pxs = [w.DateMeasured for w in pressure_waterlevels]
     pys = [w.DepthToWaterBGS for w in pressure_waterlevels]
-    fig.add_trace(
-        go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL")
-    )
+    fig.add_trace(go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL"))
 
     fig.update_layout(
-        margin= {"l": 0, "r": 0, "t": 0, "b": 0},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
         xaxis={"title": "Date Measured"},
         yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
     )
