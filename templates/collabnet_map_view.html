@@ -144,16 +144,13 @@
         </div>
         <div class="col">
             <div class="row">
-
                 <h2>Statistics</h2>
-                <table class="display compact" id="statstable">
-                    <tr>
-                        <td>N. Wells</td><td>{{ nlocations }}</td>
-                    </tr>
-                    <tr>
-                        <td>N. Waterlevels</td><td>{{ nwaterlevels }}</td>
-                    </tr>
+                <table class="display compact" id="statstable"></table>
+                <h2>Contributors</h2>
+                <table class="display compact" id="contributorstable">
+                    <thead><td>Contributor</td><td>N. Wells</td></thead>
                 </table>
+
             </div>
         </div>
     </div>
@@ -178,12 +175,29 @@
 
     <script>
     // load stats table
+    $('#contributorstable').DataTable({
+        "paging": false,
+        "searching": false,
+        "info": false,
+        "ordering": true,
+        "scrollY": "400px",
+        "order": [[ 1, "desc" ]],
+        "ajax": {
+            "url": "/collabnet/contributors",
+            "dataSrc": ""
+        },
+        "columns": [
+            { "data": "name" },
+            { "data": "contributions" }
+        ]
+    });
 
     $('#statstable').DataTable({
         "paging": false,
         "searching": false,
         "info": false,
         "ordering": false,
+        "scrollY": "125px",
         "ajax": {
             "url": "/collabnet/stats",
             "dataSrc": ""

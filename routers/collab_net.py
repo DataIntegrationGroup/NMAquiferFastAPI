@@ -23,6 +23,7 @@ import time
 from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import count, func
 from sqlalchemy.testing import in_
 from starlette.requests import Request
 from starlette.responses import StreamingResponse, FileResponse
@@ -71,10 +72,14 @@ def map_view(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/stats")
 async def read_stats(db: Session = Depends(get_db)):
-    return [
-        {"name": "N. Wells", "value": get_nlocations(db)},
-        {"name": "N. Water levels", "value": get_nwaterlevels(db)},
-    ]
+    return [{'name': 'N. Wells', 'value': get_nlocations(db)},
+            {'name': 'N. Water levels', 'value': get_nwaterlevels(db)}]
+
+
+@router.get("/contributors")
+async def read_contributions(db: Session = Depends(get_db)):
+    cons = get_contributors(db)
+    return [{'name': n, 'contributions': c} for n, c in cons]
 
 
 @router.get("/waterlevels/csv")
@@ -144,6 +149,16 @@ def get_nlocations(db: Session = Depends(get_db)):
 def get_nwaterlevels(db: Session = Depends(get_db)):
     q = get_waterlevels_query(db)
     return q.count()
+
+
+def get_contributors(db: Session = Depends(get_db)):
+    q = db.query(models.Well.DataSource, func.count(models.Location.PointID))
+    q = q.join(models.Location)
+    q = q.join(models.ProjectLocations)
+    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+    q = public_release_filter(q)
+    q = q.group_by(models.Well.DataSource)
+    return q.all()
 
 
 def get_waterlevels_query(db):
@@ -228,7 +243,6 @@ def locations_geojson(locations):
     }
 
     return content
-
 
 # def waterlevels_loop():
 #     evt = threading.Event()
