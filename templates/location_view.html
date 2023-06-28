@@ -27,7 +27,13 @@
         </div>
         <hr>
         <div class="row">
-            <div id='chart' class='chart'></div>
+            <div class="col-sm-6">
+                <div id="map" style="width: 100%; height: 400px;"></div>
+            </div>
+            <div class="col-sm-6">
+                <div id='chart'
+                     class='chart'></div>
+            </div>
         </div>
         <hr>
         <div class="row">
@@ -56,10 +62,18 @@
                 </table>
             </div>
             <div class="col-sm-4">
-                <div id="map" style="width: 100%; height: 400px;"></div>
+                <h3><a href="https://macrostrat.org">Macrostrat Data</a></h3>
+                <table id="macrostrat_data" class="display compact">
+                    <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                </table>
             </div>
             <div class="col-sm-4">
-                <h1>{{well.OSEWellID}}</h1>
+                <h2>{{well.OSEWellID}}</h2>
                 <a id='water_right'>Water Right</a>
                 <table id="pod_table" class="display compact">
                     <thead>
@@ -69,14 +83,17 @@
                     </tr>
                     </thead>
                 </table>
+                <div style="height: 20px"></div>
             </div>
         </div>
     </div>
 
     {# chart loading script #}
     <script type='text/javascript'>
-        var graphs = {{ graphJSON | safe }}
-            Plotly.plot('chart',graphs,{});
+            let graphs = {{ graphJSON | safe }}
+
+            Plotly.plot('chart', graphs,{});
+
     </script>
 
 
@@ -128,6 +145,34 @@
 
     {#data table loading script#}
     <script>
+        const columns = [
+            { data: 'name'},
+            { data: 'value' },
+        ]
+        const lat = {{ location.geometry.coordinates[1] }}
+        const lon = {{ location.geometry.coordinates[0] }}
+
+        $('#macrostrat_data').DataTable({columns: columns,
+            paging: false,
+            searching: false,
+            scrollY: 300,
+            info: false,
+            sorting: false,
+            ajax: {url: 'https://macrostrat.org/api/v2/mobile/point?lat='+lat+'&lng='+lon,
+                dataSrc: function(d){
+                    console.log('fasd', d)
+                    let data =  d.success.data
+
+                    return [{'name':'Name','value': data['name']},
+                        {'name': 'Age', 'value': data['age']},
+                        {'name': 'Description', 'value': data['desc']},
+                        {'name': 'Stratigraphic Unit', 'value': data['strat_unit']},
+                        {'name': 'Map', 'value': data['map_ref']['name']},
+                        {'name': 'Map Source', 'value': data['map_ref']['ref_source']},
+                        {'name': 'Map Year', 'value': data['map_ref']['ref_year']}
+                    ]
+                }
+            }})
 
         $('#location_table').DataTable({
             paging: false,

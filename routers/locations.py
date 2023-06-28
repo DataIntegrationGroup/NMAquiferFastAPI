@@ -207,7 +207,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     mxs = [w.DateMeasured for w in manual_waterlevels]
     mys = [w.DepthToWaterBGS for w in manual_waterlevels]
 
-    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual Water Levels"))
+    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual WL"))
 
     pressure_waterlevels = read_waterlevels_pressure_query(
         pointid, db, as_dict=True
@@ -215,10 +215,11 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     pxs = [w.DateMeasured for w in pressure_waterlevels]
     pys = [w.DepthToWaterBGS for w in pressure_waterlevels]
     fig.add_trace(
-        go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous Water Levels")
+        go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL")
     )
 
     fig.update_layout(
+        margin= {"l": 0, "r": 0, "t": 0, "b": 0},
         xaxis={"title": "Date Measured"},
         yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
     )
