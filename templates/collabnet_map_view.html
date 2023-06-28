@@ -210,7 +210,86 @@
 
     </script>
     <script>
-        mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';
+        function initMap(){
+            // TO MAKE THE MAP APPEAR YOU MUST
+            // ADD YOUR ACCESS TOKEN FROM
+            // https://account.mapbox.com
+            const map = new mapboxgl.Map({
+                container: 'map', // container ID
+                // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+                style: 'mapbox://styles/mapbox/satellite-streets-v12', // style URL
+                center: {{ center| tojson }}, // starting position [lng, lat]
+                zoom: {{ zoom }} // starting zoom
+            });
+
+            const layerList = document.getElementById('menu');
+            const inputs = layerList.getElementsByTagName('input');
+
+            for (const input of inputs) {
+                input.onclick = (layer) => {
+                    const layerId = layer.target.id;
+                    map.setStyle('mapbox://styles/mapbox/' + layerId);
+                };
+            }
+
+            const popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false
+            });
+
+            map.on('mouseenter', 'wells', (e) => {
+                map.getCanvas().style.cursor = 'pointer';
+
+                // Copy coordinates array.
+                const coordinates = e.features[0].geometry.coordinates.slice();
+
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+
+                const description = e.features[0].properties.name
+                popup.setLngLat(coordinates).setHTML(description).addTo(map);
+
+            });
+
+            map.on('mouseleave', 'wells', () => {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            });
+            map.on('click', 'wells', (e) => {
+                const pointid = e.features[0].properties.name
+                window.open('/locations/view/' + pointid, '_blank')
+            });
+            map.on('style.load',  () => {map.addSource('wells', {type: 'geojson',
+                data: '{{ data_url }}' });
+
+                map.addLayer({
+                    id: 'wells',
+                    type: 'circle',
+                    source: 'wells',
+                    paint: {
+                        'circle-radius': 4,
+                        'circle-color': '#B42222',
+                        'circle-stroke-color': 'rgba(0,0,0,1)',
+                        'circle-stroke-width': 1,
+                    }
+                });
+            });
+        }
+
+        const tokenurl = window.location.origin+'/mapboxtoken'
+        fetch(tokenurl)
+            .then(response => response.json())
+            .then(data => {
+                console.log('asdfasdfasf', data.token)
+                mapboxgl.accessToken = data.token;
+                initMap();
+            });
+
+        {#mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';#}
 
         async function switchBasemap(map, styleID) {
             const { data: newStyle } = await fetch(
@@ -251,73 +330,7 @@
         }
 
 
-        // TO MAKE THE MAP APPEAR YOU MUST
-        // ADD YOUR ACCESS TOKEN FROM
-        // https://account.mapbox.com
-        const map = new mapboxgl.Map({
-            container: 'map', // container ID
-    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-            style: 'mapbox://styles/mapbox/satellite-streets-v12', // style URL
-            center: {{ center| tojson }}, // starting position [lng, lat]
-            zoom: {{ zoom }} // starting zoom
-        });
 
-        const layerList = document.getElementById('menu');
-        const inputs = layerList.getElementsByTagName('input');
-
-        for (const input of inputs) {
-            input.onclick = (layer) => {
-                const layerId = layer.target.id;
-                map.setStyle('mapbox://styles/mapbox/' + layerId);
-            };
-        }
-
-        const popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false
-        });
-
-        map.on('mouseenter', 'wells', (e) => {
-            map.getCanvas().style.cursor = 'pointer';
-
-            // Copy coordinates array.
-            const coordinates = e.features[0].geometry.coordinates.slice();
-
-            // Ensure that if the map is zoomed out such that multiple
-            // copies of the feature are visible, the popup appears
-            // over the copy being pointed to.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-            }
-
-            const description = e.features[0].properties.name
-            popup.setLngLat(coordinates).setHTML(description).addTo(map);
-
-        });
-        
-        map.on('mouseleave', 'wells', () => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        });
-        map.on('click', 'wells', (e) => {
-            const pointid = e.features[0].properties.name
-            window.open('/locations/view/' + pointid, '_blank')
-        });
-        map.on('style.load',  () => {map.addSource('wells', {type: 'geojson',
-            data: '{{ data_url }}' });
-
-            map.addLayer({
-                    id: 'wells',
-                    type: 'circle',
-                    source: 'wells',
-                    paint: {
-                        'circle-radius': 4,
-                        'circle-color': '#B42222',
-                        'circle-stroke-color': 'rgba(0,0,0,1)',
-                        'circle-stroke-width': 1,
-                    }
-            });
-          });
     </script>
 
     <script>

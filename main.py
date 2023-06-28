@@ -67,6 +67,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
+@app.get("/mapboxtoken")
+def mapboxtoken():
+    return {'token': 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A'}
+
 
 @app.get("/map", response_class=HTMLResponse)
 def map_view(request: Request, db: Session = Depends(get_db)):

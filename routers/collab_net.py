@@ -143,6 +143,7 @@ def read_locations_geojson(db: Session = Depends(get_db)):
     return content
 
 
+
 def get_nlocations(db: Session = Depends(get_db)):
     q = get_locations_query(db)
     return q.count()
