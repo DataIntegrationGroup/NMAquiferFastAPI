@@ -135,7 +135,12 @@
                         <input id="outdoors-v12" type="radio" name="rtoggle" value="outdoors">
                         <label for="outdoors-v12">outdoors</label>
                     </div>
+                    <div>
+                        <input id="show_macrostrat" type="checkbox" checked="checked">
+                        <label for="show_macrostrat">Macrostrat</label>
+                    </div>
                 </div>
+
             </div>
 
             <p style="font-size: small">Wells from current participants in the CGMN. Zoom in and click a well to see more
@@ -219,7 +224,7 @@
                 // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
                 style: 'mapbox://styles/mapbox/satellite-streets-v12', // style URL
                 center: {{ center| tojson }}, // starting position [lng, lat]
-                zoom: {{ zoom }} // starting zoom
+                zoom: {{ zoom }}, // starting zoom
             });
 
             const layerList = document.getElementById('menu');
@@ -228,7 +233,20 @@
             for (const input of inputs) {
                 input.onclick = (layer) => {
                     const layerId = layer.target.id;
-                    map.setStyle('mapbox://styles/mapbox/' + layerId);
+                    if (layerId != 'show_macrostrat'){
+                        map.setStyle('mapbox://styles/mapbox/' + layerId)
+                    }else{
+                        if ($('#show_macrostrat').is(':checked')){
+                            map.setLayoutProperty('macrostrat', 'visibility', 'visible');
+
+                        }else{
+                            map.setLayoutProperty('macrostrat', 'visibility', 'none');
+                        }
+
+                        {#map.setStyle(map.getStyle())#}
+                        {#map.reloadStyle()#}
+                        {#console.log('getting macrostrat', map.getStyle())#}
+                    }
                 };
             }
 
@@ -269,8 +287,29 @@
                 const pointid = e.features[0].properties.name
                 window.open('/locations/view/' + pointid, '_blank')
             });
-            map.on('style.load',  () => {map.addSource('wells', {type: 'geojson',
-                data: '/collabnet/locations' });
+            map.on('style.load',  (s) => {
+                console.log('style loaded', s)
+                console.log($('#show_macrostrat'))
+                if ($('#show_macrostrat').is(':checked')){
+                    map.addSource('macrostrat', {type: 'raster',
+                        tiles: ["https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png"]})
+
+                    map.addLayer({
+                        id: 'macrostrat',
+                        type: 'raster',
+                        source: 'macrostrat',
+                        minzoom: 0,
+                        maxzoom: 22,
+                        paint: {
+                            'raster-opacity': 0.5,
+                        }
+                    })
+                }
+
+
+
+                map.addSource('wells', {type: 'geojson',
+                                data: '/collabnet/locations' });
 
                 map.addLayer({
                     id: 'wells',
@@ -293,46 +332,6 @@
                 mapboxgl.accessToken = data.token;
                 initMap();
             });
-
-        async function switchBasemap(map, styleID) {
-            const { data: newStyle } = await fetch(
-                `https://api.mapbox.com/styles/v1/${styleID}?access_token=${mapboxgl.accessToken}`
-            );
-            const currentStyle = map.getStyle();
-            // ensure any sources from the current style are copied across to the new style
-            newStyle.sources = Object.assign(
-                {},
-                currentStyle.sources,
-                newStyle.sources
-            );
-
-            // find the index of where to insert our layers to retain in the new style
-            let labelIndex = newStyle.layers.findIndex((el) => {
-                return el.id == 'waterway-label';
-            });
-
-            // default to on top
-            if (labelIndex === -1) {
-                labelIndex = newStyle.layers.length;
-            }
-            const appLayers = currentStyle.layers.filter((el) => {
-                // app layers are the layers to retain, and these are any layers which have a different source set
-                return (
-                    el.source &&
-                    el.source != 'mapbox://mapbox.satellite' &&
-                    el.source != 'mapbox' &&
-                    el.source != 'composite'
-                );
-            });
-            newStyle.layers = [
-                ...newStyle.layers.slice(0, labelIndex),
-                ...appLayers,
-                ...newStyle.layers.slice(labelIndex, -1),
-            ];
-            map.setStyle(newStyle);
-        }
-
-
 
     </script>
 
