@@ -249,9 +249,15 @@
                 while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
                     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
                 }
-
                 const description = e.features[0].properties.name
-                popup.setLngLat(coordinates).setHTML(description).addTo(map);
+                let wd = JSON.parse(e.features[0].properties.well_depth).value
+                if (wd == null){
+                    wd = 'Not known'
+                }
+
+                const txt = '<b>'+description+'</b><br>Well Depth (ft): '+wd
+
+                popup.setLngLat(coordinates).setHTML(txt).addTo(map);
 
             });
 
@@ -284,12 +290,9 @@
         fetch(tokenurl)
             .then(response => response.json())
             .then(data => {
-                console.log('asdfasdfasf', data.token)
                 mapboxgl.accessToken = data.token;
                 initMap();
             });
-
-        {#mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';#}
 
         async function switchBasemap(map, styleID) {
             const { data: newStyle } = await fetch(
