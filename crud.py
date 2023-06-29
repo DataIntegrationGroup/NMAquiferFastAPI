@@ -21,7 +21,9 @@ import requests
 
 
 def geometry_filter(q):
-    return q.filter(models.Location.Easting != None).filter(models.Location.Northing != None)
+    return q.filter(models.Location.Easting != None).filter(
+        models.Location.Northing != None
+    )
 
 
 def collabnet_filter(q):
@@ -145,6 +147,7 @@ def read_ose_pod(ose_id):
 #
 #         return ps
 
+
 def locations_feature_collection(locations):
     def togeojson(l, w):
         return {
@@ -161,5 +164,6 @@ def locations_feature_collection(locations):
     }
 
     return content
+
 
 # ============= EOF =============================================

@@ -77,7 +77,6 @@ def mapboxtoken():
 
 @app.get("/map", response_class=HTMLResponse)
 def map_view(request: Request, db: Session = Depends(get_db)):
-
     return templates.TemplateResponse(
         "map_view.html",
         {

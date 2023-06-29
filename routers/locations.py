@@ -37,7 +37,9 @@ from crud import (
     read_waterlevels_pressure_query,
     read_well,
     read_ose_pod,
-    read_waterlevels_acoustic_query, locations_feature_collection, geometry_filter,
+    read_waterlevels_acoustic_query,
+    locations_feature_collection,
+    geometry_filter,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -144,7 +146,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-        request: Request, pointid: str, db: Session = Depends(get_db)
+    request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -249,5 +251,6 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
+
 
 # ============= EOF =============================================

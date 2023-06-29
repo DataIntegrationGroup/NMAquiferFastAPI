@@ -24,7 +24,12 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import public_release_filter, active_monitoring_filter, collabnet_filter, locations_feature_collection
+from crud import (
+    public_release_filter,
+    active_monitoring_filter,
+    collabnet_filter,
+    locations_feature_collection,
+)
 from dependencies import get_db
 from routers import csv_response, json_response
 from pathlib import Path
@@ -246,8 +251,6 @@ def _get_locations_query(db, only_active=True, only_public=True):
         q = public_release_filter(q)
     q = q.order_by(models.Location.PointID)
     return q
-
-
 
 
 # ============= EOF =============================================
