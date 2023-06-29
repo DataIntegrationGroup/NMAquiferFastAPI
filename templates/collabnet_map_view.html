@@ -153,7 +153,11 @@
                 <table class="display compact" id="statstable"></table>
                 <h2>Contributors</h2>
                 <table class="display compact" id="contributorstable">
-                    <thead><td>Contributor</td><td>N. Wells</td></thead>
+                    <thead>
+                    <td>Contributor</td>
+                    <td>N. Wells</td>
+                    <td>N. Measurements</td>
+                    </thead>
                 </table>
 
             </div>
@@ -188,12 +192,13 @@
         "scrollY": "400px",
         "order": [[ 1, "desc" ]],
         "ajax": {
-            "url": "/collabnet/contributors",
+            "url": "/collabnet/measuring_agencies",
             "dataSrc": ""
         },
         "columns": [
             { "data": "name" },
-            { "data": "contributions" }
+            { "data": "nwells" },
+            { "data": "nmeasurements" }
         ]
     });
 

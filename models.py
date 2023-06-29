@@ -177,6 +177,7 @@ class Well(Base):
     FormationZone = Column(String(50), ForeignKey("LU_Formations.Code"))
     StaticWater = Column(Numeric)
     DataSource = Column(String(200))
+    MonitoringStatus = Column(String(3))
 
     lu_formation = relationship("LU_Formations", backref="wells", uselist=False)
     location = relationship("Location", backref="well", uselist=False)

@@ -24,7 +24,7 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import public_release_filter
+from crud import public_release_filter, active_monitoring_filter, collabnet_filter
 from dependencies import get_db
 from routers import csv_response, json_response
 from pathlib import Path
@@ -61,13 +61,16 @@ async def read_stats(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/contributors",
+    "/measuring_agencies",
     summary="Collab Network Contributors",
     description="Contributors to the Collaborative Network",
 )
 async def read_contributions(db: Session = Depends(get_db)):
-    cons = _get_contributors(db)
-    return [{"name": n, "contributions": c} for n, c in cons]
+    cons = _get_measuring_agencies(db)
+    print(cons)
+    return [{"name": n,
+             "nmeasurements": nm,
+             'nwells': nw} for n, nm, nw in cons]
 
 
 @router.get(
@@ -148,24 +151,30 @@ def _get_nwaterlevels(db: Session = Depends(get_db)):
     return q.count()
 
 
-def _get_contributors(db: Session = Depends(get_db)):
-    q = db.query(models.Well.DataSource, func.count(models.Location.PointID))
-    q = q.join(models.Location)
-    q = q.join(models.ProjectLocations)
-    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
-    q = public_release_filter(q)
-    q = q.group_by(models.Well.DataSource)
-    return q.all()
-
-
-def _get_waterlevels_query(db):
-    q = db.query(models.WaterLevels, models.Well)
+def _get_measuring_agencies(db: Session = Depends(get_db)):
+    q = db.query(models.WaterLevels.MeasuringAgency, func.count(models.WaterLevels.OBJECTID),
+                 func.count(func.distinct(models.WaterLevels.WellID)))
     q = q.join(models.Well)
     q = q.join(models.Location)
     q = q.join(models.ProjectLocations)
 
+    q = collabnet_filter(q)
     q = public_release_filter(q)
+    q = active_monitoring_filter(q)
+    q = q.group_by(models.WaterLevels.MeasuringAgency)
+    return q.all()
+
+
+def _get_waterlevels_query(db, only_active=True, only_public=True):
+    q = db.query(models.WaterLevels, models.Well)
+    q = q.join(models.Well)
+    q = q.join(models.Location)
+    q = q.join(models.ProjectLocations)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+    if only_active:
+        q = active_monitoring_filter(q)
+    if only_public:
+        q = public_release_filter(q)
     q = q.order_by(models.Location.PointID)
     return q
 
@@ -214,12 +223,16 @@ def _get_locations(db: Session = Depends(get_db)):
         return []
 
 
-def _get_locations_query(db):
+def _get_locations_query(db, only_active=True, only_public=True):
     q = db.query(models.Location, models.Well)
     q = q.join(models.ProjectLocations)
     q = q.join(models.Well)
     q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
-    q = public_release_filter(q)
+    if only_active:
+        q = active_monitoring_filter(q)
+
+    if only_public:
+        q = public_release_filter(q)
     q = q.order_by(models.Location.PointID)
     return q
 

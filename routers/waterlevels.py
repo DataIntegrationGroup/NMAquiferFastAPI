@@ -86,7 +86,7 @@ def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
         rows.append(row)
 
     if acoustic:
-        rows.append(["#Manual Water Levels"])
+        rows.append(["#Acoustic Water Levels"])
         for ai in acoustic:
             row = [ai.DateMeasured, ai.DepthToWaterBGS]
             rows.append(row)

@@ -20,8 +20,19 @@ import models
 import requests
 
 
+def collabnet_filter(q):
+    return q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+
+
 def public_release_filter(q):
     return q.filter(models.Location.PublicRelease == True)
+
+
+def active_monitoring_filter(q):
+    q = q.filter(models.Well.MonitoringStatus.notlike('%I%'))
+    q = q.filter(models.Well.MonitoringStatus.notlike('%C%'))
+    q = q.filter(models.Well.MonitoringStatus.notlike('%X%'))
+    return q
 
 
 # readers
@@ -48,17 +59,29 @@ def read_waterlevels_acoustic_query(pointid, db, as_dict=False):
     return q
 
 
+def read_waterlevels_acoustic_query(pointid, db, as_dict=False):
+    return read_waterlevels_continuous_query(
+        models.WaterLevelsContinuous_Acoustic, pointid, db, as_dict=as_dict
+    )
+
+
 def read_waterlevels_pressure_query(pointid, db, as_dict=False):
+    return read_waterlevels_continuous_query(
+        models.WaterLevelsContinuous_Pressure, pointid, db, as_dict=as_dict
+    )
+
+
+def read_waterlevels_continuous_query(table, pointid, db, as_dict=False):
     if as_dict:
-        q = db.query(models.WaterLevelsContinuous_Pressure.__table__)
+        q = db.query(table.__table__)
     else:
-        q = db.query(models.WaterLevelsContinuous_Pressure)
+        q = db.query(table)
 
     if pointid:
         q = q.join(models.Well)
         q = q.join(models.Location)
         q = q.filter(models.Location.PointID == pointid)
-    q = q.order_by(models.WaterLevelsContinuous_Pressure.DateMeasured)
+    q = q.order_by(table.DateMeasured)
     q = public_release_filter(q)
     return q
 
@@ -94,7 +117,6 @@ def read_ose_pod(ose_id):
         f"where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*"
     )
     return requests.get(url).json(), url
-
 
 # def _read_pods(pointid, db):
 #     q = db.query(models.Well)
