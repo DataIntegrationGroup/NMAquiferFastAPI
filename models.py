@@ -256,7 +256,9 @@ class WaterLevelsContinuous_Acoustic(Base, MeasurementMixin):
 class WaterLevels(Base, MeasurementMixin):
     __tablename__ = "WaterLevels"
     OBJECTID = Column(Integer, primary_key=True)
-    WellID = Column(GUID, ForeignKey("WellData.WellID"), primary_key=True, cache_ok=True)
+    WellID = Column(
+        GUID, ForeignKey("WellData.WellID"), primary_key=True, cache_ok=True
+    )
     DepthToWaterBGS = Column(Numeric)
     DateMeasured = Column(Date)
     TimeMeasured = Column(Time)

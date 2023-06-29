@@ -71,12 +71,14 @@ async def read_contributions(db: Session = Depends(get_db)):
     ws = 0
     ms = 0
     for n, nm, nw in cons:
-        ws+=nw
-        ms+=nm
+        ws += nw
+        ms += nm
     print(ws, ms)
 
-
-    return [{"name": n or 'Agency Not Known', "nmeasurements": nm, "nwells": nw} for n, nm, nw in cons]
+    return [
+        {"name": n or "Agency Not Known", "nmeasurements": nm, "nwells": nw}
+        for n, nm, nw in cons
+    ]
 
 
 @router.get(
