@@ -35,8 +35,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 
-@router.get("/map", summary="Collab Network Map view",
-            description="Map view of the Collaborative Network")
+@router.get(
+    "/map",
+    summary="Collab Network Map view",
+    description="Map view of the Collaborative Network",
+)
 def map_view(request: Request):
     return templates.TemplateResponse(
         "collabnet_map_view.html",
@@ -44,38 +47,44 @@ def map_view(request: Request):
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 6,
-        }
+        },
     )
 
 
-@router.get("/stats",
-            summary="Collab Network Stats",
-            description="Stats for the Collaborative Network")
+@router.get(
+    "/stats",
+    summary="Collab Network Stats",
+    description="Stats for the Collaborative Network",
+)
 async def read_stats(db: Session = Depends(get_db)):
-    return {'nlocations': _get_nlocations(db),
-            'nwaterlevels': _get_nwaterlevels(db)
-            }
+    return {"nlocations": _get_nlocations(db), "nwaterlevels": _get_nwaterlevels(db)}
 
 
-@router.get("/contributors",
-            summary="Collab Network Contributors",
-            description="Contributors to the Collaborative Network")
+@router.get(
+    "/contributors",
+    summary="Collab Network Contributors",
+    description="Contributors to the Collaborative Network",
+)
 async def read_contributions(db: Session = Depends(get_db)):
     cons = _get_contributors(db)
     return [{"name": n, "contributions": c} for n, c in cons]
 
 
-@router.get("/waterlevels/csv",
-            summary="Collab Network Water Levels CSV",
-            description="Get all the water levels for all the wells in the Collaborative Network as a CSV file")
+@router.get(
+    "/waterlevels/csv",
+    summary="Collab Network Water Levels CSV",
+    description="Get all the water levels for all the wells in the Collaborative Network as a CSV file",
+)
 async def read_waterlevels(db: Session = Depends(get_db)):
     content = _get_waterlevels_csv(db)
     return csv_response("waterlevels.csv", content)
 
 
-@router.get("/locations/csv",
-            summary="Collab Network Locations CSV",
-            description="Get all the wells in the Collaborative Network as a CSV file")
+@router.get(
+    "/locations/csv",
+    summary="Collab Network Locations CSV",
+    description="Get all the wells in the Collaborative Network as a CSV file",
+)
 def read_locations_csv(db: Session = Depends(get_db)):
     stream = io.StringIO()
     writer = csv.writer(stream)
@@ -105,23 +114,28 @@ def read_locations_csv(db: Session = Depends(get_db)):
     return csv_response("locations", stream.getvalue())
 
 
-@router.get("/locations/geojson",
-            summary="Collab Network Locations GeoJSON",
-            description="Get all the wells in the Collaborative Network as a GeoJSON file")
+@router.get(
+    "/locations/geojson",
+    summary="Collab Network Locations GeoJSON",
+    description="Get all the wells in the Collaborative Network as a GeoJSON file",
+)
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = _get_locations(db)
     content = _locations_geojson(ls)
     return json_response("locations", content)
 
 
-@router.get("/locations",
-            response_model=schemas.LocationFeatureCollection,
-            summary="Collab Network Locations",
-            description="Get all the wells in the Collaborative Network as a GeoJSON FeatureCollection")
+@router.get(
+    "/locations",
+    response_model=schemas.LocationFeatureCollection,
+    summary="Collab Network Locations",
+    description="Get all the wells in the Collaborative Network as a GeoJSON FeatureCollection",
+)
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = _get_locations(db)
     content = _locations_geojson(ls)
     return content
+
 
 # =========== helper functions ===========
 def _get_nlocations(db: Session = Depends(get_db)):
@@ -226,5 +240,6 @@ def _locations_geojson(locations):
     }
 
     return content
+
 
 # ============= EOF =============================================
