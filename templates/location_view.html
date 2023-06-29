@@ -36,7 +36,7 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-sm-4">
+            <div class="col-sm-6">
                 <h3>NMBGMR Location Data</h3>
                 <table id="location_table" class="display compact">
                     <thead>
@@ -52,7 +52,7 @@
                         </tr>
                         <tr>
                             <td>Elevation (ft)</td>
-                            <td>{{ location.geometry.coordinates[2]|round(2)}}</td>
+                            <td>{{ (location.geometry.coordinates[2]*3.28084)|round(2)}}</td>
                         </tr>
                         <tr>
                             <td>Formation</td>
@@ -61,18 +61,18 @@
                     </tbody>
                 </table>
             </div>
-            <div class="col-sm-4">
-                <h3><a href="https://macrostrat.org" class="icon" target="_blank">Macrostrat Data</a></h3>
-                <table id="macrostrat_data" class="display compact">
-                    <thead>
-                    <tr>
-                        <th>Attribute</th>
-                        <th>Value</th>
-                    </tr>
-                    </thead>
-                </table>
-            </div>
-            <div class="col-sm-4">
+{#            <div class="col-sm-4">#}
+{#                <h3><a href="https://macrostrat.org" class="icon" target="_blank">Macrostrat Data</a></h3>#}
+{#                <table id="macrostrat_data" class="display compact">#}
+{#                    <thead>#}
+{#                    <tr>#}
+{#                        <th>Attribute</th>#}
+{#                        <th>Value</th>#}
+{#                    </tr>#}
+{#                    </thead>#}
+{#                </table>#}
+{#            </div>#}
+            <div class="col-sm-6">
                 <h3>OSE Data {{well.OSEWellID}} <a target=_blank class='icon' id='water_right'>Water Right</a></h3>
                 <table id="pod_table" class="display compact">
                     <thead>
@@ -144,34 +144,34 @@
 
     {#data table loading script#}
     <script>
-        const columns = [
-            { data: 'name'},
-            { data: 'value' },
-        ]
-        const lat = {{ location.geometry.coordinates[1] }}
-        const lon = {{ location.geometry.coordinates[0] }}
-
-        $('#macrostrat_data').DataTable({columns: columns,
-            paging: false,
-            searching: false,
-            scrollY: 300,
-            info: false,
-            sorting: false,
-            ajax: {url: 'https://macrostrat.org/api/v2/mobile/point?lat='+lat+'&lng='+lon,
-                dataSrc: function(d){
-                    console.log('fasd', d)
-                    let data =  d.success.data
-
-                    return [{'name':'Name','value': data['name']},
-                        {'name': 'Age', 'value': data['age']},
-                        {'name': 'Description', 'value': data['desc']},
-                        {'name': 'Stratigraphic Unit', 'value': data['strat_unit']},
-                        {'name': 'Map', 'value': data['map_ref']['name']},
-                        {'name': 'Map Source', 'value': data['map_ref']['ref_source']},
-                        {'name': 'Map Year', 'value': data['map_ref']['ref_year']}
-                    ]
-                }
-            }})
+        {#const columns = [#}
+        {#    { data: 'name'},#}
+        {#    { data: 'value' },#}
+        {#]#}
+        {#const lat = {{ location.geometry.coordinates[1] }}#}
+        {#const lon = {{ location.geometry.coordinates[0] }}#}
+        {##}
+        {#$('#macrostrat_data').DataTable({columns: columns,#}
+        {#    paging: false,#}
+        {#    searching: false,#}
+        {#    scrollY: 300,#}
+        {#    info: false,#}
+        {#    sorting: false,#}
+        {#    ajax: {url: 'https://macrostrat.org/api/v2/mobile/point?lat='+lat+'&lng='+lon,#}
+        {#        dataSrc: function(d){#}
+        {#            console.log('fasd', d)#}
+        {#            let data =  d.success.data#}
+        {##}
+        {#            return [{'name':'Name','value': data['name']},#}
+        {#                {'name': 'Age', 'value': data['age']},#}
+        {#                {'name': 'Description', 'value': data['desc']},#}
+        {#                {'name': 'Stratigraphic Unit', 'value': data['strat_unit']},#}
+        {#                {'name': 'Map', 'value': data['map_ref']['name']},#}
+        {#                {'name': 'Map Source', 'value': data['map_ref']['ref_source']},#}
+        {#                {'name': 'Map Year', 'value': data['map_ref']['ref_year']}#}
+        {#            ]#}
+        {#        }#}
+        {#    }})#}
 
         $('#location_table').DataTable({
             paging: false,
@@ -183,7 +183,6 @@
             {#    { data: 'value' },#}
             {#]#}
         })
-
         $('#pod_table').DataTable( {
             paging: false,
             searching: false,
@@ -193,13 +192,18 @@
                 {
                     url: '{{ pod_url |safe }}',
                     dataSrc: function(d){
-                        let pod = d['features'][0]['attributes']
+                        console.log(d)
+                        try {
+                            let pod = d['features'][0]['attributes']
+                            $('#water_right').attr('href', pod['nmwrrs_wrs'])
 
-                        $('#water_right').attr('href', pod['nmwrrs_wrs'])
+                            return Object.keys(pod).map(function(key) {
+                                return {'name': key, 'value': pod[key]}
+                            })
+                        } catch (e) {
+                            return []
+                        }
 
-                        return Object.keys(pod).map(function(key) {
-                            return {'name': key, 'value': pod[key]}
-                        })
                     }
                 },
             columns: [
@@ -227,7 +231,7 @@
         or scientific purposes.
     </p>
     <p>
-        For more information on this project contact: <a href="mailto: stacy.timmons@nmt.edu">Stacy Timmons</a>
+        For more information on this project contact: <a href="mailto:Laila.Sturgis@nmt.edu">Laila Sturgis</a>
     </p>
     {{ super() }}
 {% endblock %}
