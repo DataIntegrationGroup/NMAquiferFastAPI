@@ -203,11 +203,11 @@ class MeasurementMixin(object):
     MeasuringAgency = Column(String(50))
 
     @declared_attr
-    def MeasurementMethod(self):
+    def MeasurementMethod(cls):
         return Column(String(50), ForeignKey("LU_MeasurementMethod.Code"))
 
     @declared_attr
-    def DataSource(self):
+    def DataSource(cls):
         return Column(String(50), ForeignKey("LU_DataSource.Code"))
 
     @declared_attr
@@ -256,7 +256,7 @@ class WaterLevelsContinuous_Acoustic(Base, MeasurementMixin):
 class WaterLevels(Base, MeasurementMixin):
     __tablename__ = "WaterLevels"
     OBJECTID = Column(Integer, primary_key=True)
-    WellID = Column(GUID, ForeignKey("WellData.WellID"), primary_key=True)
+    WellID = Column(GUID, ForeignKey("WellData.WellID"), primary_key=True, cache_ok=True)
     DepthToWaterBGS = Column(Numeric)
     DateMeasured = Column(Date)
     TimeMeasured = Column(Time)

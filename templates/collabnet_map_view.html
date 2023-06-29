@@ -143,7 +143,7 @@
 
             </div>
 
-            <p style="font-size: small">Wells from current participants in the CGMN. Zoom in and click a well to see more
+            <p class="caption">Wells from current participants in the CGMN. Zoom in and click a well to see more
                 information</p>
 
         </div>
@@ -159,7 +159,14 @@
                     <td>N. Measurements</td>
                     </thead>
                 </table>
-
+                <p class="caption">
+                    Please note that the sum of <code>N. Wells</code> is not equal to <code>N. Locations</code> because
+                    some
+                    wells
+                    are
+                    measured
+                    by multiple agencies.
+                </p>
             </div>
         </div>
     </div>
@@ -190,7 +197,7 @@
         "info": false,
         "ordering": true,
         "scrollY": "400px",
-        "order": [[ 1, "desc" ]],
+        "order": [[ 0, "asc" ]],
         "ajax": {
             "url": "/collabnet/measuring_agencies",
             "dataSrc": ""

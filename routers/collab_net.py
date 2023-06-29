@@ -67,8 +67,16 @@ async def read_stats(db: Session = Depends(get_db)):
 )
 async def read_contributions(db: Session = Depends(get_db)):
     cons = _get_measuring_agencies(db)
-    print(cons)
-    return [{"name": n, "nmeasurements": nm, "nwells": nw} for n, nm, nw in cons]
+
+    ws = 0
+    ms = 0
+    for n, nm, nw in cons:
+        ws+=nw
+        ms+=nm
+    print(ws, ms)
+
+
+    return [{"name": n or 'Agency Not Known', "nmeasurements": nm, "nwells": nw} for n, nm, nw in cons]
 
 
 @router.get(
@@ -153,7 +161,7 @@ def _get_measuring_agencies(db: Session = Depends(get_db)):
     q = db.query(
         models.WaterLevels.MeasuringAgency,
         func.count(models.WaterLevels.OBJECTID),
-        func.count(func.distinct(models.WaterLevels.WellID)),
+        func.count(func.distinct(models.Well.PointID)),
     )
     q = q.join(models.Well)
     q = q.join(models.Location)
@@ -226,9 +234,9 @@ def _get_locations(db: Session = Depends(get_db)):
 
 def _get_locations_query(db, only_active=True, only_public=True):
     q = db.query(models.Location, models.Well)
-    q = q.join(models.ProjectLocations)
     q = q.join(models.Well)
-    q = q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
+    q = q.join(models.ProjectLocations)
+    q = collabnet_filter(q)
     if only_active:
         q = active_monitoring_filter(q)
 
