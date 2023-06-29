@@ -68,9 +68,7 @@ async def read_stats(db: Session = Depends(get_db)):
 async def read_contributions(db: Session = Depends(get_db)):
     cons = _get_measuring_agencies(db)
     print(cons)
-    return [{"name": n,
-             "nmeasurements": nm,
-             'nwells': nw} for n, nm, nw in cons]
+    return [{"name": n, "nmeasurements": nm, "nwells": nw} for n, nm, nw in cons]
 
 
 @router.get(
@@ -152,8 +150,11 @@ def _get_nwaterlevels(db: Session = Depends(get_db)):
 
 
 def _get_measuring_agencies(db: Session = Depends(get_db)):
-    q = db.query(models.WaterLevels.MeasuringAgency, func.count(models.WaterLevels.OBJECTID),
-                 func.count(func.distinct(models.WaterLevels.WellID)))
+    q = db.query(
+        models.WaterLevels.MeasuringAgency,
+        func.count(models.WaterLevels.OBJECTID),
+        func.count(func.distinct(models.WaterLevels.WellID)),
+    )
     q = q.join(models.Well)
     q = q.join(models.Location)
     q = q.join(models.ProjectLocations)

@@ -36,7 +36,8 @@ from crud import (
     read_waterlevels_manual_query,
     read_waterlevels_pressure_query,
     read_well,
-    read_ose_pod, read_waterlevels_acoustic_query,
+    read_ose_pod,
+    read_waterlevels_acoustic_query,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -213,8 +214,9 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
         pointid, db, as_dict=True
     ).all()
     if not continuous_waterlevels:
-        continuous_waterlevels = read_waterlevels_acoustic_query(pointid, db, as_dict=True
-                                                                 ).all()
+        continuous_waterlevels = read_waterlevels_acoustic_query(
+            pointid, db, as_dict=True
+        ).all()
 
     pxs = [w.DateMeasured for w in continuous_waterlevels]
     pys = [w.DepthToWaterBGS for w in continuous_waterlevels]

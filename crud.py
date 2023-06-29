@@ -29,9 +29,9 @@ def public_release_filter(q):
 
 
 def active_monitoring_filter(q):
-    q = q.filter(models.Well.MonitoringStatus.notlike('%I%'))
-    q = q.filter(models.Well.MonitoringStatus.notlike('%C%'))
-    q = q.filter(models.Well.MonitoringStatus.notlike('%X%'))
+    q = q.filter(models.Well.MonitoringStatus.notlike("%I%"))
+    q = q.filter(models.Well.MonitoringStatus.notlike("%C%"))
+    q = q.filter(models.Well.MonitoringStatus.notlike("%X%"))
     return q
 
 
@@ -117,6 +117,7 @@ def read_ose_pod(ose_id):
         f"where=+db_file%3D%27{ose_id}%27&f=pjson&outFields=*"
     )
     return requests.get(url).json(), url
+
 
 # def _read_pods(pointid, db):
 #     q = db.query(models.Well)
