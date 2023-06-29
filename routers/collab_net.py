@@ -24,7 +24,7 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
-from crud import public_release_filter, active_monitoring_filter, collabnet_filter
+from crud import public_release_filter, active_monitoring_filter, collabnet_filter, locations_feature_collection
 from dependencies import get_db
 from routers import csv_response, json_response
 from pathlib import Path
@@ -132,19 +132,19 @@ def read_locations_csv(db: Session = Depends(get_db)):
 )
 def read_locations_geojson(db: Session = Depends(get_db)):
     ls = _get_locations(db)
-    content = _locations_geojson(ls)
+    content = locations_feature_collection(ls)
     return json_response("locations", content)
 
 
 @router.get(
-    "/locations",
+    "/locations/fc",
     response_model=schemas.LocationFeatureCollection,
     summary="Collab Network Locations",
     description="Get all the wells in the Collaborative Network as a GeoJSON FeatureCollection",
 )
-def read_locations_geojson(db: Session = Depends(get_db)):
+def read_locations_geojson_fc(db: Session = Depends(get_db)):
     ls = _get_locations(db)
-    content = _locations_geojson(ls)
+    content = locations_feature_collection(ls)
     return content
 
 
@@ -248,22 +248,6 @@ def _get_locations_query(db, only_active=True, only_public=True):
     return q
 
 
-def _locations_geojson(locations):
-    def togeojson(l, w):
-        return {
-            "type": "Feature",
-            "properties": {
-                "name": l.PointID,
-                "well_depth": {"value": w.WellDepth, "units": "ft"},
-            },
-            "geometry": l.geometry,
-        }
-
-    content = {
-        "features": [togeojson(*l) for l in locations],
-    }
-
-    return content
 
 
 # ============= EOF =============================================

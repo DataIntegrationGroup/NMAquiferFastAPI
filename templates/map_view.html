@@ -1,77 +1,198 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Display a map on a webpage</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <style>
-        body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+            {##map { position: absolute; top: 0; bottom: 0; width: 100%; }#}
+            #menu {
+                position: absolute;
+                right: 0;
+                z-index: 9;
+                border: black 1px solid;
+                background: antiquewhite;
+                width: 20%;
+                margin: 5px;
+                padding: 5px;}
+            #mapcontainer {position: relative; height: 80vh;}
+            #map {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                z-index: 1;
+            }
     </style>
-</head>
 
-<body>
-
-    <div id="map"></div>
-
+{% endblock %}
+{% block content %}
+    <div id="mapcontainer">
+        <div id="map"></div>
+        <div id="menu">
+            <div>
+                <input id="satellite-streets-v12" type="radio" name="rtoggle" value="satellite" checked="checked">
+                <!-- See a list of Mapbox-hosted public styles at -->
+                <!-- https://docs.mapbox.com/api/maps/styles/#mapbox-styles -->
+                <label for="satellite-streets-v12">satellite streets</label>
+            </div>
+            <div>
+                <input id="light-v11" type="radio" name="rtoggle" value="light">
+                <label for="light-v11">light</label>
+            </div>
+            <div>
+                <input id="dark-v11" type="radio" name="rtoggle" value="dark">
+                <label for="dark-v11">dark</label>
+            </div>
+            <div>
+                <input id="streets-v12" type="radio" name="rtoggle" value="streets">
+                <label for="streets-v12">streets</label>
+            </div>
+            <div>
+                <input id="outdoors-v12" type="radio" name="rtoggle" value="outdoors">
+                <label for="outdoors-v12">outdoors</label>
+            </div>
+            <div>
+                <input id="show_macrostrat" type="checkbox" checked="checked">
+                <label for="show_macrostrat">Macrostrat</label>
+            </div>
+        </div>
+    </div>
     <script>
-        // TO MAKE THE MAP APPEAR YOU MUST
-        // ADD YOUR ACCESS TOKEN FROM
-        // https://account.mapbox.com
-        mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';
-        const map = new mapboxgl.Map({
-            container: 'map', // container ID
-    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-            style: 'mapbox://styles/mapbox/streets-v12', // style URL
-            center: [-106.5, 35], // starting position [lng, lat]
-            zoom: 7 // starting zoom
-        });
+        function initMap(){
+            const map = new mapboxgl.Map({
+                container: 'map', // container ID
+                // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+                style: 'mapbox://styles/mapbox/satellite-streets-v12', // style URL
+                center: [-106, 34.5], // starting position [lng, lat]
+                zoom: 6, // starting zoom
+            });
 
-        const popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false
-        });
+            const layerList = document.getElementById('menu');
+            const inputs = layerList.getElementsByTagName('input');
 
-        map.on('mouseenter', 'wells', (e) => {
-            map.getCanvas().style.cursor = 'pointer';
+            for (const input of inputs) {
+                input.onclick = (layer) => {
+                    const layerId = layer.target.id;
+                    if (layerId != 'show_macrostrat'){
+                        map.setStyle('mapbox://styles/mapbox/' + layerId)
+                    }else{
+                        if ($('#show_macrostrat').is(':checked')){
+                            map.setLayoutProperty('macrostrat', 'visibility', 'visible');
 
-            // Copy coordinates array.
-            const coordinates = e.features[0].geometry.coordinates.slice();
+                        }else{
+                            map.setLayoutProperty('macrostrat', 'visibility', 'none');
+                        }
 
-            // Ensure that if the map is zoomed out such that multiple
-            // copies of the feature are visible, the popup appears
-            // over the copy being pointed to.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                        {#map.setStyle(map.getStyle())#}
+                        {#map.reloadStyle()#}
+                        {#console.log('getting macrostrat', map.getStyle())#}
+                    }
+                };
             }
 
-            const description = e.features[0].properties.name
-            popup.setLngLat(coordinates).setHTML(description).addTo(map);
+            const popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false
+            });
 
-        });
-        
-        map.on('mouseleave', 'wells', () => {
-            map.getCanvas().style.cursor = '';
-            popup.remove();
-        });
+            map.on('mouseenter', 'wells', (e) => {
+                map.getCanvas().style.cursor = 'pointer';
 
-        map.on('load',  () => {map.addSource('wells', {type: 'geojson',
-            data: '{{ data_url }}' });
+                // Copy coordinates array.
+                const coordinates = e.features[0].geometry.coordinates.slice();
 
-            map.addLayer({
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+                const description = e.features[0].properties.name
+                let wd = JSON.parse(e.features[0].properties.well_depth).value
+                if (wd == null){
+                    wd = 'Not known'
+                }
+
+                const txt = '<b>'+description+'</b><br>Well Depth (ft): '+wd
+
+                popup.setLngLat(coordinates).setHTML(txt).addTo(map);
+
+            });
+
+            map.on('mouseleave', 'wells', () => {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+            });
+            map.on('click', 'wells', (e) => {
+                const pointid = e.features[0].properties.name
+                window.open('/locations/view/' + pointid, '_blank')
+            });
+            map.on('style.load',  (s) => {
+                console.log('style loaded', s)
+                console.log($('#show_macrostrat'))
+                if ($('#show_macrostrat').is(':checked')){
+                    map.addSource('macrostrat', {type: 'raster',
+                        tiles: ["https://tiles.macrostrat.org/carto/{z}/{x}/{y}.png"]})
+
+                    map.addLayer({
+                        id: 'macrostrat',
+                        type: 'raster',
+                        source: 'macrostrat',
+                        minzoom: 0,
+                        maxzoom: 22,
+                        paint: {
+                            'raster-opacity': 0.5,
+                        }
+                    })
+                }
+
+
+
+                map.addSource('wells', {type: 'geojson',
+                    data: '/locations/fc' });
+
+                map.addLayer({
                     id: 'wells',
                     type: 'circle',
                     source: 'wells',
                     paint: {
-                        'circle-radius': 6,
-                        'circle-color': '#B42222'
+                        'circle-radius': 4,
+                        'circle-color': '#B42222',
+                        'circle-stroke-color': 'rgba(0,0,0,1)',
+                        'circle-stroke-width': 1,
                     }
+                });
             });
-          });
+        }
+
+        const tokenurl = window.location.origin+'/mapboxtoken'
+        fetch(tokenurl)
+            .then(response => response.json())
+            .then(data => {
+                mapboxgl.accessToken = data.token;
+                initMap();
+            });
 
     </script>
 
-    </body>
-</html>
+{% endblock %}
+
+
+
+
+
+{##}
+{#<!DOCTYPE html>#}
+{#<html lang="en">#}
+{#<head>#}
+{#    <meta charset="utf-8">#}
+{#    <title>Display a map on a webpage</title>#}
+{#    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">#}
+{#    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">#}
+{#    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>#}
+{#    <style>#}
+{#        body { margin: 0; padding: 0; }#}
+{#        #map { position: absolute; top: 0; bottom: 0; width: 100%; }#}
+{#    </style>#}
+{#</head>#}
+

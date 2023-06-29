@@ -37,7 +37,7 @@ from crud import (
     read_waterlevels_pressure_query,
     read_well,
     read_ose_pod,
-    read_waterlevels_acoustic_query,
+    read_waterlevels_acoustic_query, locations_feature_collection, geometry_filter,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -45,22 +45,21 @@ import plotly.graph_objects as go
 router = APIRouter(prefix="/locations", tags=["locations"])
 
 
-@router.get("/geojson", response_model=schemas.LocationFeatureCollection)
-def read_locations_geojson(db: Session = Depends(get_db)):
-    q = db.query(models.Location)
-    q = public_release_filter(q)
-    locations = q.all()
+def _get_locations(db, only_public=True):
+    q = db.query(models.Location, models.Well)
+    q = q.join(models.Well)
+    q = geometry_filter(q)
+    if only_public:
+        q = public_release_filter(q)
+    q = q.order_by(models.Location.PointID)
+    return q.all()
 
-    def togeojson(l):
-        return {
-            "type": "Feature",
-            "properties": {"name": l.PointID},
-            "geometry": l.geometry,
-        }
 
-    content = {
-        "features": [togeojson(l) for l in locations],
-    }
+@router.get("/fc", response_model=schemas.LocationFeatureCollection)
+def read_locations_geojson_fc(db: Session = Depends(get_db)):
+    locations = _get_locations(db)
+
+    content = locations_feature_collection(locations)
     return content
 
 
@@ -145,7 +144,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-    request: Request, pointid: str, db: Session = Depends(get_db)
+        request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -250,6 +249,5 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
-
 
 # ============= EOF =============================================

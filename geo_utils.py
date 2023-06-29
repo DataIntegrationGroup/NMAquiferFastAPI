@@ -23,7 +23,6 @@ def utm_to_latlon(e, n, zone=13):
     if name not in PROJECTIONS:
         pr = pyproj.Proj(proj="utm", zone=int(zone), ellps="WGS84")
         PROJECTIONS[name] = pr
-
     pr = PROJECTIONS[name]
     return pr(e, n, inverse=True)
 

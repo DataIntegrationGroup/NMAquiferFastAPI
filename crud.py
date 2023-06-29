@@ -20,6 +20,10 @@ import models
 import requests
 
 
+def geometry_filter(q):
+    return q.filter(models.Location.Easting != None).filter(models.Location.Northing != None)
+
+
 def collabnet_filter(q):
     return q.filter(models.ProjectLocations.ProjectName == "Water Level Network")
 
@@ -141,5 +145,21 @@ def read_ose_pod(ose_id):
 #
 #         return ps
 
+def locations_feature_collection(locations):
+    def togeojson(l, w):
+        return {
+            "type": "Feature",
+            "properties": {
+                "name": l.PointID,
+                "well_depth": {"value": w.WellDepth, "units": "ft"},
+            },
+            "geometry": l.geometry,
+        }
+
+    content = {
+        "features": [togeojson(*l) for l in locations],
+    }
+
+    return content
 
 # ============= EOF =============================================

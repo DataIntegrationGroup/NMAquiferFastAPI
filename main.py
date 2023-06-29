@@ -77,25 +77,14 @@ def mapboxtoken():
 
 @app.get("/map", response_class=HTMLResponse)
 def map_view(request: Request, db: Session = Depends(get_db)):
-    # q = db.query(models.Location.__table__)
-    # q = public_release_filter(q)
-    # locations = q.all()
-    # locations = read_locations(db)
-    #
-    # def make_point(i):
-    #     return {
-    #         "type": "Feature",
-    #         "properties": {"name": f"Point {i.PointID}"},
-    #         "geometry": i.geometry,
-    #     }
 
     return templates.TemplateResponse(
         "map_view.html",
         {
             "request": request,
-            "center": {"lat": 34.5, "lon": -106.0},
-            "zoom": 7,
-            "data_url": "/locations/geojson",
+            # "center": {"lat": 34.5, "lon": -106.0},
+            # "zoom": 7,
+            # "data_url": "/locations/fc",
         },
     )
 
