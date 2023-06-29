@@ -15,18 +15,11 @@
 # ===============================================================================
 import csv
 import io
-import json
-import os
-import threading
-import time
 
 from fastapi import APIRouter, Depends
-from fastapi_cache.decorator import cache
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import count, func
-from sqlalchemy.testing import in_
+from sqlalchemy.sql.functions import func
 from starlette.requests import Request
-from starlette.responses import StreamingResponse, FileResponse
 from starlette.templating import Jinja2Templates
 
 import models
@@ -34,68 +27,59 @@ import schemas
 from crud import public_release_filter
 from dependencies import get_db
 from routers import csv_response, json_response
+from pathlib import Path
 
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 
-@router.get("/map")
-def map_view(request: Request, db: Session = Depends(get_db)):
-    # ls = get_locations(db)
-    # def make_point(loc, well):
-    #     return {
-    #         "type": "Feature",
-    #         "properties": {"name": f"Point {loc.PointID}"},
-    #         "geometry": loc.geometry,
-    #     }
-    stats = [
-        {"name": "N. Wells", "value": get_nlocations(db)},
-        {"name": "N. Water Levels", "value": get_nwaterlevels(db)},
-    ]
-
+@router.get("/map", summary="Collab Network Map view",
+            description="Map view of the Collaborative Network")
+def map_view(request: Request):
     return templates.TemplateResponse(
         "collabnet_map_view.html",
         {
             "request": request,
             "center": {"lat": 34.5, "lon": -106.0},
             "zoom": 6,
-            "data_url": "/collabnet/locations",
-            # 'stats': stats
-            # "nlocations": get_nlocations(db),
-            # 'nwaterlevels': get_nwaterlevels(db)
-        },
+        }
     )
 
 
-@router.get("/stats")
+@router.get("/stats",
+            summary="Collab Network Stats",
+            description="Stats for the Collaborative Network")
 async def read_stats(db: Session = Depends(get_db)):
-    return [
-        {"name": "N. Wells", "value": get_nlocations(db)},
-        {"name": "N. Water levels", "value": get_nwaterlevels(db)},
-    ]
+    return {'nlocations': _get_nlocations(db),
+            'nwaterlevels': _get_nwaterlevels(db)
+            }
 
 
-@router.get("/contributors")
+@router.get("/contributors",
+            summary="Collab Network Contributors",
+            description="Contributors to the Collaborative Network")
 async def read_contributions(db: Session = Depends(get_db)):
-    cons = get_contributors(db)
+    cons = _get_contributors(db)
     return [{"name": n, "contributions": c} for n, c in cons]
 
 
-@router.get("/waterlevels/csv")
+@router.get("/waterlevels/csv",
+            summary="Collab Network Water Levels CSV",
+            description="Get all the water levels for all the wells in the Collaborative Network as a CSV file")
 async def read_waterlevels(db: Session = Depends(get_db)):
-    stream = get_waterlevels_csv(db)
+    content = _get_waterlevels_csv(db)
+    return csv_response("waterlevels.csv", content)
 
-    return csv_response("waterlevels.csv", stream)
 
-
-@router.get("/locations/csv")
+@router.get("/locations/csv",
+            summary="Collab Network Locations CSV",
+            description="Get all the wells in the Collaborative Network as a CSV file")
 def read_locations_csv(db: Session = Depends(get_db)):
     stream = io.StringIO()
     writer = csv.writer(stream)
-    ls = get_locations(db)
+    ls = _get_locations(db)
     writer.writerow(
         (
             "index",
@@ -121,39 +105,36 @@ def read_locations_csv(db: Session = Depends(get_db)):
     return csv_response("locations", stream.getvalue())
 
 
-@router.get("/locations/geojson")
+@router.get("/locations/geojson",
+            summary="Collab Network Locations GeoJSON",
+            description="Get all the wells in the Collaborative Network as a GeoJSON file")
 def read_locations_geojson(db: Session = Depends(get_db)):
-    ls = get_locations(db)
-    content = locations_geojson(ls)
+    ls = _get_locations(db)
+    content = _locations_geojson(ls)
     return json_response("locations", content)
 
-    # stream = io.StringIO()
-    # stream.write(json.dumps(content))
-    # response = StreamingResponse(
-    #     iter([stream.getvalue()]), media_type="application/json"
-    # )
-    # response.headers["Content-Disposition"] = "attachment; filename=locations.json"
-    # return response
 
-
-@router.get("/locations", response_model=schemas.LocationFeatureCollection)
+@router.get("/locations",
+            response_model=schemas.LocationFeatureCollection,
+            summary="Collab Network Locations",
+            description="Get all the wells in the Collaborative Network as a GeoJSON FeatureCollection")
 def read_locations_geojson(db: Session = Depends(get_db)):
-    ls = get_locations(db)
-    content = locations_geojson(ls)
+    ls = _get_locations(db)
+    content = _locations_geojson(ls)
     return content
 
-
-def get_nlocations(db: Session = Depends(get_db)):
-    q = get_locations_query(db)
+# =========== helper functions ===========
+def _get_nlocations(db: Session = Depends(get_db)):
+    q = _get_locations_query(db)
     return q.count()
 
 
-def get_nwaterlevels(db: Session = Depends(get_db)):
-    q = get_waterlevels_query(db)
+def _get_nwaterlevels(db: Session = Depends(get_db)):
+    q = _get_waterlevels_query(db)
     return q.count()
 
 
-def get_contributors(db: Session = Depends(get_db)):
+def _get_contributors(db: Session = Depends(get_db)):
     q = db.query(models.Well.DataSource, func.count(models.Location.PointID))
     q = q.join(models.Location)
     q = q.join(models.ProjectLocations)
@@ -163,7 +144,7 @@ def get_contributors(db: Session = Depends(get_db)):
     return q.all()
 
 
-def get_waterlevels_query(db):
+def _get_waterlevels_query(db):
     q = db.query(models.WaterLevels, models.Well)
     q = q.join(models.Well)
     q = q.join(models.Location)
@@ -175,8 +156,8 @@ def get_waterlevels_query(db):
     return q
 
 
-def get_waterlevels_csv(db):
-    q = get_waterlevels_query(db)
+def _get_waterlevels_csv(db):
+    q = _get_waterlevels_query(db)
     header = (
         "PointID",
         "DateMeasured",
@@ -211,15 +192,15 @@ def get_waterlevels_csv(db):
     return stream.getvalue()
 
 
-def get_locations(db: Session = Depends(get_db)):
-    q = get_locations_query(db)
+def _get_locations(db: Session = Depends(get_db)):
+    q = _get_locations_query(db)
     try:
         return q.all()
     except Exception as e:
         return []
 
 
-def get_locations_query(db):
+def _get_locations_query(db):
     q = db.query(models.Location, models.Well)
     q = q.join(models.ProjectLocations)
     q = q.join(models.Well)
@@ -229,7 +210,7 @@ def get_locations_query(db):
     return q
 
 
-def locations_geojson(locations):
+def _locations_geojson(locations):
     def togeojson(l, w):
         return {
             "type": "Feature",
@@ -245,26 +226,5 @@ def locations_geojson(locations):
     }
 
     return content
-
-
-# def waterlevels_loop():
-#     evt = threading.Event()
-#     while 1:
-#         if os.path.isfile("waterlevels.csv"):
-#             s = os.stat("waterlevels.csv")
-#             if time.time() - s.st_mtime < 60 * 60 * 24:
-#                 continue
-#
-#         db = next(get_db())
-#         txt = get_waterlevels_csv(db)
-#         with open("waterlevels.csv", "w") as fp:
-#             fp.write(txt)
-#
-#         evt.wait(1)
-#
-#
-# t = threading.Thread(target=waterlevels_loop)
-# t.start()
-
 
 # ============= EOF =============================================

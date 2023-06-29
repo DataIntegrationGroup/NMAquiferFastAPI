@@ -200,7 +200,10 @@
         "scrollY": "125px",
         "ajax": {
             "url": "/collabnet/stats",
-            "dataSrc": ""
+            "dataSrc": function(d){
+                return [{'name': 'N. Locations', 'value': d['nlocations']},
+                        {'name': 'N. Water Levels', 'value': d['nwaterlevels']}]
+            }
         },
         "columns": [
             { "data": "name" },
@@ -211,9 +214,6 @@
     </script>
     <script>
         function initMap(){
-            // TO MAKE THE MAP APPEAR YOU MUST
-            // ADD YOUR ACCESS TOKEN FROM
-            // https://account.mapbox.com
             const map = new mapboxgl.Map({
                 container: 'map', // container ID
                 // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
@@ -264,7 +264,7 @@
                 window.open('/locations/view/' + pointid, '_blank')
             });
             map.on('style.load',  () => {map.addSource('wells', {type: 'geojson',
-                data: '{{ data_url }}' });
+                data: '/collabnet/locations' });
 
                 map.addLayer({
                     id: 'wells',
