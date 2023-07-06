@@ -35,6 +35,7 @@ class Location(Base):
     __tablename__ = "Location"
     LocationId = Column(GUID, primary_key=True)
     PointID = Column(String(50))
+    SiteID = Column(String(200))
     AlternateSiteID = Column(String(50))
 
     PublicRelease = Column(Boolean)

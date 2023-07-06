@@ -109,6 +109,7 @@ def read_locations_csv(db: Session = Depends(get_db)):
         (
             "index",
             "PointID",
+            "SiteID",
             "Latitude",
             "Longitude",
             "Elevation (ft asl)",
@@ -120,6 +121,7 @@ def read_locations_csv(db: Session = Depends(get_db)):
         row = (
             i + 1,
             l.PointID,
+            l.SiteID,
             lat,
             lon,
             f"{l.Altitude :0.2f}",
