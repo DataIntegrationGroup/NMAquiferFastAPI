@@ -83,8 +83,6 @@ function initMap(center, zoom, dataurl){
             })
         }
 
-
-
         map.addSource('wells', {type: 'geojson',
             data: dataurl });
 
@@ -94,7 +92,7 @@ function initMap(center, zoom, dataurl){
             source: 'wells',
             paint: {
                 'circle-radius': 4,
-                'circle-color': '#B42222',
+                'circle-color': '#223ab4',
                 'circle-stroke-color': 'rgba(0,0,0,1)',
                 'circle-stroke-width': 1,
             }

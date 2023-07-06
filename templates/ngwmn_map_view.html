@@ -94,16 +94,16 @@
     </div>
     <div class="row">
         <div class="col">
-            <div id="downloads" role="group" class="btn-group">
-                <form>
+{#            <div id="downloads" role="group" class="btn-group">#}
+{#                <form>#}
 {#                    <button class="btn btn-outline-primary" id='download_waterlevels'>Download WaterLevels CSV</button>#}
-                    <button class="btn btn-outline-primary" type="submit" formaction="/ngwmn/locations/geojson">Download
-                        Locations</button>
-                    <button class="btn btn-outline-primary" type="submit" formaction="/ngwmn/locations/csv">Download
-                        Locations
-                        CSV</button>
-                </form>
-            </div>
+{#                    <button class="btn btn-outline-primary" type="submit" formaction="/ngwmn/locations/geojson">Download#}
+{#                        Locations</button>#}
+{#                    <button class="btn btn-outline-primary" type="submit" formaction="/ngwmn/locations/csv">Download#}
+{#                        Locations#}
+{#                        CSV</button>#}
+{#                </form>#}
+{#            </div>#}
             <div id="mapcontainer">
                 <div id="map"></div>
 
@@ -177,9 +177,8 @@
             .then(response => response.json())
             .then(data => {
                 mapboxgl.accessToken = data.token;
-                initMap([-106.4,34.5], 6, '/ngwmn/locations/fc');
+                initMap({{ center|tojson }}, {{ zoom }}, '/ngwmn/locations/fc');
             });
-
     </script>
 
 {#    <script>#}
