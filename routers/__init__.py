@@ -22,6 +22,7 @@ from starlette.templating import Jinja2Templates
 BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
+
 def json_response(filename, content):
     if not filename.endswith(".json"):
         filename = f"{filename}.json"

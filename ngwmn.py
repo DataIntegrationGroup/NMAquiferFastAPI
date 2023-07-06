@@ -43,4 +43,5 @@ def make_waterlevels(point_id, db):
 
     return make_xml_response(db, (sql, sql2), point_id, water_levels_xml2)
 
+
 # ============= EOF =============================================

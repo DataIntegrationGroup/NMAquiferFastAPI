@@ -43,10 +43,11 @@ def map_view(request: Request):
     )
 
 
-@router.get("/locations/fc",
-            response_model=schemas.LocationFeatureCollection,)
+@router.get(
+    "/locations/fc",
+    response_model=schemas.LocationFeatureCollection,
+)
 async def read_ngwmn_locations_feature_collection(db=Depends(get_db)):
-
     q = db.query(models.Location, models.Well)
     q = q.join(models.Well)
     q = q.join(models.ProjectLocations)
@@ -74,5 +75,6 @@ async def read_ngwmn_wellconstruction(pointid: str, db=Depends(get_db)):
 async def read_ngwmn_lithology(pointid: str, db=Depends(get_db)):
     data = make_lithology(pointid, db)
     return Response(content=data, media_type="application/xml")
+
 
 # ============= EOF =============================================

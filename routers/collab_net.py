@@ -37,8 +37,6 @@ from pathlib import Path
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
 
 
-
-
 @router.get(
     "/map",
     summary="Collab Network Map view",
