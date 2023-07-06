@@ -14,9 +14,13 @@
 # limitations under the License.
 # ===============================================================================
 import json
+from pathlib import Path
 
 from starlette.responses import StreamingResponse
+from starlette.templating import Jinja2Templates
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 def json_response(filename, content):
     if not filename.endswith(".json"):

@@ -15,13 +15,47 @@
 # ===============================================================================
 from typing import List
 
-from fastapi import APIRouter, Depends
-from starlette.responses import Response
+from fastapi import APIRouter, Depends, Request, Response
 
+import models
+import schemas
+from crud import locations_feature_collection
 from dependencies import get_db
 from ngwmn import make_waterlevels, make_wellconstruction, make_lithology
+from routers import templates
 
 router = APIRouter(prefix="/ngwmn", tags=["ngwmn"])
+
+
+@router.get(
+    "/map",
+    summary="NGWMN Map view",
+    description="Map view of the Collaborative Network",
+)
+def map_view(request: Request):
+    return templates.TemplateResponse(
+        "ngwmn_map_view.html",
+        {
+            "request": request,
+            "center": {"lat": 34.5, "lon": -106.0},
+            "zoom": 6,
+        },
+    )
+
+
+@router.get("/locations/fc",
+            response_model=schemas.LocationFeatureCollection,)
+async def read_ngwmn_locations_feature_collection(db=Depends(get_db)):
+
+    q = db.query(models.Location, models.Well)
+    q = q.join(models.Well)
+    q = q.join(models.ProjectLocations)
+    q = q.filter(models.ProjectLocations.ProjectName == "NGWMN")
+
+    ls = q.all()
+    content = locations_feature_collection(ls)
+
+    return content
 
 
 @router.get("/waterlevels/{pointid}")
@@ -40,6 +74,5 @@ async def read_ngwmn_wellconstruction(pointid: str, db=Depends(get_db)):
 async def read_ngwmn_lithology(pointid: str, db=Depends(get_db)):
     data = make_lithology(pointid, db)
     return Response(content=data, media_type="application/xml")
-
 
 # ============= EOF =============================================

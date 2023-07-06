@@ -31,13 +31,12 @@ from crud import (
     locations_feature_collection,
 )
 from dependencies import get_db
-from routers import csv_response, json_response
+from routers import csv_response, json_response, templates
 from pathlib import Path
 
 router = APIRouter(prefix="/collabnet", tags=["collabnet"])
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
+
 
 
 @router.get(
