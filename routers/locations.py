@@ -16,6 +16,7 @@
 import io
 import json
 import os
+import sys
 from uuid import UUID
 
 import plotly
@@ -107,7 +108,7 @@ def safe_json(d):
 
 @router.get("/photo/{photoid}")
 def read_photo(photoid: str):
-    if os.platform == "darwin":
+    if sys.platform == "darwin":
         path = "/Volumes/amp/data/database/photos/Digital photos_wells"
     else:
         path = "/mnt/wellphotos/Digital photos_wells"
