@@ -23,7 +23,6 @@ from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import LimitOffsetPage, Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from smb.SMBConnection import SMBConnection
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
