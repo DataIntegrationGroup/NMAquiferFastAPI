@@ -27,7 +27,13 @@ from smb.SMBConnection import SMBConnection
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse, HTMLResponse, StreamingResponse, FileResponse
+from starlette.responses import (
+    Response,
+    JSONResponse,
+    HTMLResponse,
+    StreamingResponse,
+    FileResponse,
+)
 from starlette.status import HTTP_200_OK
 from starlette.templating import Jinja2Templates
 
@@ -102,13 +108,12 @@ def safe_json(d):
 
 @router.get("/photo/{photoid}")
 def read_photo(photoid: str):
-    if os.platform == 'darwin':
-        path = '/Volumes/amp/data/database/photos/Digital photos_wells'
+    if os.platform == "darwin":
+        path = "/Volumes/amp/data/database/photos/Digital photos_wells"
     else:
-        path = '/mnt/wellphotos/Digital photos_wells'
-    path = f'{path}/{photoid}'
+        path = "/mnt/wellphotos/Digital photos_wells"
+    path = f"{path}/{photoid}"
     return FileResponse(path)
-
 
 
 @router.get("/pointid/{pointid}/photo")
@@ -137,7 +142,6 @@ def read_photo_pointid(pointid: str, db: Session = Depends(get_db)):
     # import smbclient
     # smbclient.ClientConfig(username=user, password=password)
     # print(smbclient.listdir('\\agustin\\amp\\data'))
-
 
     # print('acasdsadfasdf', result)
     # for s in conn.listShares():
@@ -202,7 +206,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-        request: Request, pointid: str, db: Session = Depends(get_db)
+    request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -301,6 +305,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
 
 # End Views ======================================================
 
+
 def get_photo_path(pointid, db):
     q = db.query(models.WellPhotos)
     q = q.filter(models.WellPhotos.PointID == pointid)
@@ -312,5 +317,6 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
+
 
 # ============= EOF =============================================
