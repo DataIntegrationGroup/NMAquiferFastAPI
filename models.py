@@ -30,6 +30,12 @@ from fastapi_utils.guid_type import GUID
 from database import Base
 from geo_utils import utm_to_latlon
 
+class WellPhotos(Base):
+    __tablename__ = "WellPhotos"
+    GlobalID = Column(GUID, primary_key=True)
+    PointID = Column(String(50))
+    OLEPath = Column(String(255))
+
 
 class Location(Base):
     __tablename__ = "Location"

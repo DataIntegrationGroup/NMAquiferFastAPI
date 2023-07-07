@@ -15,6 +15,7 @@
 # ===============================================================================
 import io
 import json
+import os
 from uuid import UUID
 
 import plotly
@@ -22,10 +23,11 @@ from fastapi import APIRouter, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import LimitOffsetPage, Page
 from fastapi_pagination.ext.sqlalchemy import paginate
+from smb.SMBConnection import SMBConnection
 
 from sqlalchemy.orm import Session
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse, HTMLResponse, StreamingResponse
+from starlette.responses import Response, JSONResponse, HTMLResponse, StreamingResponse, FileResponse
 from starlette.status import HTTP_200_OK
 from starlette.templating import Jinja2Templates
 
@@ -98,6 +100,60 @@ def safe_json(d):
             safe_json(v)
 
 
+@router.get("/photo/{photoid}")
+def read_photo(photoid: str):
+    if os.platform == 'darwin':
+        path = '/Volumes/amp/data/database/photos/Digital photos_wells'
+    else:
+        path = '/mnt/wellphotos/Digital photos_wells'
+    path = f'{path}/{photoid}'
+    return FileResponse(path)
+
+
+
+@router.get("/pointid/{pointid}/photo")
+def read_photo_pointid(pointid: str, db: Session = Depends(get_db)):
+    paths = get_photo_path(pointid, db)
+
+    # print(os.listdir('/Volumes/amp/data/database/photos/Digital photos_wells/'))
+    # from smb.SMBConnection import SMBConnection
+
+    # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
+    # client_machine_name can be an arbitary ASCII string
+    # server_name should match the remote machine name, or else the connection will be rejected
+    # server_name = os.environ.get('SMB_SERVER_NAME', '')
+    # server_host = os.environ.get('SMB_SERVER_HOST', '')
+    # user = os.environ.get('SMB_USER', '')
+    # password = os.environ.get('SMB_PASSWORD', '')
+
+    # conn = SMBConnection(user, password, 'fastapi', server_name, is_direct_tcp=True)
+    # result = conn.connect(server_host, 445, timeout=5)
+
+    # print('rea', result)
+    # from smbclient import register_session, listdir
+    # register_session(server_host, username=user, password=password)
+
+    # listdir(r'\\agustin\amp')
+    # import smbclient
+    # smbclient.ClientConfig(username=user, password=password)
+    # print(smbclient.listdir('\\agustin\\amp\\data'))
+
+
+    # print('acasdsadfasdf', result)
+    # for s in conn.listShares():
+    #     print('share', s.name)
+    # print('fasd', conn.listPath('amp', '/data/database/photos/'))
+    # for p in paths:
+    #     print('asdf', p.OLEPath)
+    #     npath = f'/data/database/photos/Digital photos_wells/{p.OLEPath}'
+    #     print('npath', npath)
+    #     fileobj = io.StringIO()
+    #     conn.retrieveFile('amp', f'data/{p.OLEPath}', fileobj, timeout=0.5)
+    #     fileobj.seek(0)
+
+    return paths
+
+
 @router.get("/pointid/{pointid}/download")
 def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
     loc = get_location(pointid, db)
@@ -146,7 +202,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-    request: Request, pointid: str, db: Session = Depends(get_db)
+        request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -245,12 +301,16 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
 
 # End Views ======================================================
 
+def get_photo_path(pointid, db):
+    q = db.query(models.WellPhotos)
+    q = q.filter(models.WellPhotos.PointID == pointid)
+    return q.all()
+
 
 def get_location(pointid, db):
     q = db.query(models.Location)
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
-
 
 # ============= EOF =============================================

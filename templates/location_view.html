@@ -85,8 +85,28 @@
                 <div style="height: 20px"></div>
             </div>
         </div>
+        <div class="row">
+            <div id="photocontainer"></div>
+        </div>
     </div>
 
+    <script>
+        fetch('/locations/pointid/{{ location.PointID }}/photo')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                data.forEach(p => {
+                    console.log('pasdf', p)
+                    var img = document.createElement('img')
+                    img.src = '/locations/photo/'+ p.OLEPath
+                    console.log('asdfasdfasd', img)
+                    $('#photocontainer').prepend(img)
+                })
+            })
+
+
+
+    </script>
     {# chart loading script #}
     <script type='text/javascript'>
             let graphs = {{ graphJSON | safe }}
