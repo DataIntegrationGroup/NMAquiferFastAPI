@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 from fastapi import FastAPI
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
@@ -35,6 +36,7 @@ app = FastAPI(
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # from graphql_app import graphql_app
 # app.add_route("/graphql", graphql_app)

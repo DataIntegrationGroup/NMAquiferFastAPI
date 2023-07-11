@@ -10,5 +10,9 @@ jinja2
 plotly
 pandas
 pyproj
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
 
 

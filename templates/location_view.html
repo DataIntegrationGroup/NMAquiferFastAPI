@@ -26,6 +26,10 @@
 
     <div class="container-fluid">
         <div class="row">
+            <table id="sensitive_table" class="display compact">
+            </table>
+        </div>
+        <div class="row">
             <div class="col-sm">
                 <form>
                     <button class="btn btn-outline-primary" action="submit"
@@ -103,22 +107,67 @@
         </div>
     </div>
 
+{#    <script>#}
+{#        // load images#}
+{#        fetch('/locations/pointid/{{ location.PointID }}/photo')#}
+{#            .then(response => response.json())#}
+{#            .then(data => {#}
+{#                data.forEach(p => {#}
+{#                    var img = document.createElement('img')#}
+{#                    img.src = '/locations/photo/'+ p.OLEPath#}
+{#                    $('#photocontainer').prepend(img)#}
+{#                })#}
+{#            })#}
+{##}
+{##}
+{#        // load sensitive#}
+{#        var fdata = new FormData()#}
+{#        fdata.append('username', 'ethan')#}
+{#        fdata.append('password', 'secret')#}
+{##}
+{#        fetch('/token', {method: 'POST', body: fdata}).then(resp => resp.json()).then(data =>{#}
+{#            $('#sensitive_table').DataTable({#}
+{#                paging: false,#}
+{#                searching: false,#}
+{#                scrollY: 300,#}
+{#                info: false,#}
+{#                ajax: {#}
+{#                    url: '/locations/pointid/{{ location.PointID }}/sensitive',#}
+{#                    headers: {"Authorization": "Bearer " + data.access_token},#}
+{#                    dataSrc: function(d){#}
+{#                        return Object.keys(d).map(function(key) {#}
+{#                            return {'name': key, 'value': d[key]}#}
+{#                        })#}
+{##}
+{#                    }#}
+{#                },#}
+{#                columns: [#}
+{#                    { data: 'name'},#}
+{#                    { data: 'value' },#}
+{#                ]#}
+{#            })#}
+{#        })#}
+{##}
+{#    </script>#}
     <script>
-        fetch('/locations/pointid/{{ location.PointID }}/photo')
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
-                data.forEach(p => {
-                    console.log('pasdf', p)
-                    var img = document.createElement('img')
-                    img.src = '/locations/photo/'+ p.OLEPath
-                    console.log('asdfasdfasd', img)
-                    $('#photocontainer').prepend(img)
-                })
-            })
-
-
-
+        $('#sensitive_table').DataTable({
+                        paging: false,
+                        searching: false,
+                        scrollY: 300,
+                        info: false,
+                        ajax: {
+                            url: '/locations/pointid/{{ location.PointID }}/sensitive',
+                            dataSrc: function(d){
+                                return Object.keys(d).map(function(key) {
+                                    return {'name': key, 'value': d[key]}
+                                })
+                            }
+                        },
+                        columns: [
+                            { data: 'name'},
+                            { data: 'value' },
+                        ]
+                    })
     </script>
     {# chart loading script #}
     <script type='text/javascript'>
@@ -205,6 +254,7 @@
         {#            ]#}
         {#        }#}
         {#    }})#}
+
 
         $('#location_table').DataTable({
             paging: false,

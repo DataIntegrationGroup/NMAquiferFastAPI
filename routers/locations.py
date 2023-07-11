@@ -17,6 +17,7 @@ import io
 import json
 import os
 import sys
+from typing import Annotated
 from uuid import UUID
 
 import plotly
@@ -51,6 +52,7 @@ from crud import (
 )
 from dependencies import get_db
 import plotly.graph_objects as go
+from auth import get_current_user, User, get_current_active_user
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
@@ -104,6 +106,28 @@ def safe_json(d):
             d[k] = str(v)
         if isinstance(v, dict):
             safe_json(v)
+
+
+@router.get('/pointid/{pointid}/sensitive')
+def read_sensitive(pointid: str,
+                   # current_user: Annotated[User, Depends(get_current_active_user)],
+                   db: Session = Depends(get_db),
+                   ):
+    # print('asf', current_user)
+    q = db.query(models.Location, models.Well, models.OwnersData)
+    q = q.join(models.Well)
+    q = q.join(models.OwnerLink)
+    q = q.join(models.OwnersData)
+
+    q = q.filter(models.Location.PointID == pointid)
+
+    loc, well, ownersdata = q.first()
+
+    return {'Name': f'{ownersdata.FirstName} {ownersdata.LastName}',
+            'Email': ownersdata.Email,
+            'Phone': ownersdata.Phone,
+            'Cell': ownersdata.CellPhone}
+    # return {'name': ownersdata.FirstName, 'last_name': ownersdata.LastName}
 
 
 @router.get("/photo/{photoid}")

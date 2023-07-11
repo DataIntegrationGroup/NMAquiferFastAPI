@@ -167,6 +167,24 @@ class ProjectLocations(Base):
     ProjectName = Column(String(250))
 
 
+class OwnersData(Base):
+    __tablename__ = "OwnersData"
+    FirstName = Column(String(50))
+    LastName = Column(String(50))
+    OwnerKey = Column(String(50), primary_key=True)
+    Email = Column(String(50))
+    CellPhone = Column(String(50))
+    Phone = Column(String(50))
+    MailingAddress = Column(String(50))
+
+
+class OwnerLink(Base):
+    __tablename__ = "OwnerLink"
+    GlobalID = Column(GUID, primary_key=True)
+    LocationId = Column(GUID, ForeignKey("Location.LocationId"))
+    OwnerKey = Column(String(50), ForeignKey("OwnersData.OwnerKey"))
+
+
 class Well(Base):
     __tablename__ = "WellData"
     # LocationId = Column(GUID, ForeignKey("Location.LocationId"))
@@ -302,6 +320,5 @@ class WaterLevels(Base, MeasurementMixin):
             return self.lu_data_quality.Meaning
         except AttributeError:
             return ""
-
 
 # ============= EOF =============================================
