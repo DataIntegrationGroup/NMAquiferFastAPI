@@ -108,11 +108,12 @@ def safe_json(d):
             safe_json(v)
 
 
-@router.get('/pointid/{pointid}/sensitive')
-def read_sensitive(pointid: str,
-                   # current_user: Annotated[User, Depends(get_current_active_user)],
-                   db: Session = Depends(get_db),
-                   ):
+@router.get("/pointid/{pointid}/sensitive")
+def read_sensitive(
+    pointid: str,
+    # current_user: Annotated[User, Depends(get_current_active_user)],
+    db: Session = Depends(get_db),
+):
     # print('asf', current_user)
     q = db.query(models.Location, models.Well, models.OwnersData)
     q = q.join(models.Well)
@@ -123,10 +124,12 @@ def read_sensitive(pointid: str,
 
     loc, well, ownersdata = q.first()
 
-    return {'Name': f'{ownersdata.FirstName} {ownersdata.LastName}',
-            'Email': ownersdata.Email,
-            'Phone': ownersdata.Phone,
-            'Cell': ownersdata.CellPhone}
+    return {
+        "Name": f"{ownersdata.FirstName} {ownersdata.LastName}",
+        "Email": ownersdata.Email,
+        "Phone": ownersdata.Phone,
+        "Cell": ownersdata.CellPhone,
+    }
     # return {'name': ownersdata.FirstName, 'last_name': ownersdata.LastName}
 
 
