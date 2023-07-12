@@ -177,4 +177,5 @@ def locations_feature_collection(locations):
 
     return content
 
+
 # ============= EOF =============================================

@@ -48,7 +48,9 @@ from crud import (
     read_ose_pod,
     read_waterlevels_acoustic_query,
     locations_feature_collection,
-    geometry_filter, read_equipment, pointid_filter,
+    geometry_filter,
+    read_equipment,
+    pointid_filter,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -106,6 +108,7 @@ def safe_json(d):
             d[k] = str(v)
         if isinstance(v, dict):
             safe_json(v)
+
 
 #
 # @router.get("/pointid/{pointid}/sensitive")
@@ -233,7 +236,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-        request: Request, pointid: str, db: Session = Depends(get_db)
+    request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -257,7 +260,7 @@ def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
 # ====== Detail ==================================================
 
 
-@router.get('/detail/{pointid}', response_class=HTMLResponse)
+@router.get("/detail/{pointid}", response_class=HTMLResponse)
 def location_detail(request: Request, pointid: str):
     return templates.TemplateResponse(
         "location_detail_view.html",
@@ -272,7 +275,8 @@ def location_detail(request: Request, pointid: str):
         },
     )
 
-@router.get('/{pointid}/owners', response_model=schemas.OwnersData)
+
+@router.get("/{pointid}/owners", response_model=schemas.OwnersData)
 def location_detail_owners(pointid: str, db: Session = Depends(get_db)):
     q = db.query(models.Location, models.Well, models.OwnersData)
     q = q.join(models.Well)
@@ -283,10 +287,13 @@ def location_detail_owners(pointid: str, db: Session = Depends(get_db)):
 
     loc, well, ownersdata = q.first()
     return ownersdata
+
+
 #
 #     q = q.filter(models.Location.PointID == pointid)
 #
 #     loc, well, ownersdata = q.first()
+
 
 @router.get("/{pointid}/location", response_model=schemas.Location)
 def read_location_pointid_location(pointid: str, db: Session = Depends(get_db)):
@@ -404,5 +411,6 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
+
 
 # ============= EOF =============================================
