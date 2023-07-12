@@ -43,6 +43,13 @@ class Location(ORMBaseModel):
     geometry: Optional[dict] = None
 
 
+class ProjectLocations(ORMBaseModel):
+    GlobalID: Union[UUID, None]
+    LocationId: Union[UUID, None]
+    PointID: Union[str, None]
+    ProjectName: Union[str, None]
+
+
 class Equipment(ORMBaseModel):
     PointID: str
     LocationId: UUID
@@ -124,6 +131,5 @@ class Well(ORMBaseModel):
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
 
     pods: Optional[list] = None
-
 
 # ============= EOF =============================================

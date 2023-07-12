@@ -31,7 +31,7 @@
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col-6">
+            <div class="col-5">
                 <h2>Location</h2>
                 <table id="locationtable" class="display compact">
                    <thead>
@@ -39,7 +39,11 @@
                    </thead>
                 </table>
             </div>
-            <div class="col-6">
+            <div class="col-2">
+                <h2>Projects</h2>
+                <table id="projectstable" class="display compact"></table>
+            </div>
+            <div class="col-5">
                 <h2>Well</h2>
                 <table id="welltable" class="display compact">
                     <thead>
@@ -48,6 +52,7 @@
                 </table>
             </div>
         </div>
+
         <div class="row">
             <div class="col-6">
                 <h2>Owners</h2>
@@ -133,6 +138,24 @@
             }
         })
 
+        const pcolumns = [
+            { data: 'ProjectName'},
+            {#{ data: 'Model'},#}
+            {#{ data: 'SerialNo'},#}
+            {#{ data: 'DateInstalled'},#}
+            {#{ data: 'DateRemoved'},#}
+        ]
+        $('#projectstable').DataTable({
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false,
+            columns: pcolumns,
+            ajax: {
+                url: '/locations/{{ pointid }}/projects',
+                dataSrc: ''
+            }
+        })
         {#$('#welltable').DataTable({#}
         {#    ordering: false,#}
         {#    searching: false,#}

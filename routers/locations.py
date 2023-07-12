@@ -275,6 +275,12 @@ def location_detail(request: Request, pointid: str):
         },
     )
 
+@router.get("/{pointid}/projects", response_model=List[schemas.ProjectLocations])
+def location_projects(pointid: str, db: Session = Depends(get_db)):
+    q = db.query(models.ProjectLocations)
+    q = q.filter(models.ProjectLocations.PointID == pointid)
+    return q.all()
+
 
 @router.get("/{pointid}/owners", response_model=schemas.OwnersData)
 def location_detail_owners(pointid: str, db: Session = Depends(get_db)):
