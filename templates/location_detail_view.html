@@ -21,6 +21,10 @@
             position: absolute;
             z-index: 1;
         }
+        h4 {
+            border: #3498db 3px solid;
+            border-radius: 5px;
+        }
     </style>
 
 {% endblock %}
@@ -54,7 +58,7 @@
                 </div>
             </div>
             <div class="col-5">
-                <h2>Location</h2>
+                <h4>Location</h4>
                 <table id="locationtable" class="display compact">
                    <thead>
                    <tr><th>Name</th><th>Value</th></tr>
@@ -62,11 +66,11 @@
                 </table>
             </div>
             <div class="col-2">
-                <h2>Projects</h2>
+                <h4>Projects</h4>
                 <table id="projectstable" class="display compact"></table>
             </div>
             <div class="col-5">
-                <h2>Well</h2>
+                <h4>Well</h4>
                 <table id="welltable" class="display compact">
                     <thead>
                     <tr><th>Name</th><th>Value</th></tr>
@@ -76,7 +80,7 @@
         </div>
         <div class="row">
             <div class="col-6">
-                <h2>Owners</h2>
+                <h4>Owners</h4>
                 <table id="ownerstable" class="display compact">
                     <thead>
                     <tr><th>Name</th><th>Value</th></tr>
@@ -84,7 +88,7 @@
                 </table>
             </div>
             <div class="col-6">
-                <h2>Equipment</h2>
+                <h4>Equipment</h4>
                 <table id="equipmenttable" class="display compact">
                     <thead>
                         <tr>
@@ -99,6 +103,20 @@
             </div>
         </div>
         <div class="row">
+            <div class="col">
+                <h4>OSE POD</h4>
+                <table id="pod_table" class="display compact">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <h4>Photos</h4>
             <div id="photocontainer"></div>
         </div>
     </div>
@@ -184,16 +202,37 @@
                 dataSrc: ''
             }
         })
-        {#$('#welltable').DataTable({#}
-        {#    ordering: false,#}
-        {#    searching: false,#}
-        {#    paging: false,#}
-        {#    info: false,#}
-        {#    columns: columns,#}
-        {#    ajax: {#}
-        {#        url: '/locations/{{ pointid }}/well',#}
-        {#        dataSrc: totable}#}
-        {# })#}
+
+        $('#pod_table').DataTable( {
+            ordering: false,
+            paging: false,
+            searching: false,
+            scrollY: 300,
+            info: false,
+            ajax:
+                {
+                    url: '{{ pod_url |safe }}',
+                    dataSrc: function(d){
+                        console.log(d)
+                        try {
+                            let pod = d['features'][0]['attributes']
+                            $('#water_right').attr('href', pod['nmwrrs_wrs'])
+
+                            return Object.keys(pod).map(function(key) {
+                                return {'name': key, 'value': pod[key]}
+                            })
+                        } catch (e) {
+                            return []
+                        }
+
+                    }
+                },
+            columns: [
+                { data: 'name'},
+                { data: 'value' },
+            ]
+        });
+
 
             let graphs = {{ graphJSON | safe }}
             Plotly.plot('chart', graphs,{});
