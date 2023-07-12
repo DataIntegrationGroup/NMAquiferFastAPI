@@ -34,6 +34,12 @@ def public_release_filter(q):
     return q.filter(models.Location.PublicRelease == True)
 
 
+def pointid_filter(q, pointid):
+    if pointid:
+        q = q.filter(models.Location.PointID == pointid)
+    return q
+
+
 def active_monitoring_filter(q):
     q = q.filter(models.Well.MonitoringStatus.notlike("%I%"))
     q = q.filter(models.Well.MonitoringStatus.notlike("%C%"))
@@ -44,8 +50,7 @@ def active_monitoring_filter(q):
 # readers
 def read_locations(db, pointid=None):
     q = db.query(models.Location)
-    if pointid:
-        q = q.filter(models.Location.PointID == pointid)
+    q = pointid_filter(q, pointid)
     q = public_release_filter(q)
     return q
 
@@ -59,7 +64,7 @@ def read_waterlevels_acoustic_query(pointid, db, as_dict=False):
     if pointid:
         q = q.join(models.Well)
         q = q.join(models.Location)
-        q = q.filter(models.Location.PointID == pointid)
+        q = pointid_filter(q, pointid)
     q = q.order_by(models.WaterLevelsContinuous_Acoustic.DateMeasured)
     q = public_release_filter(q)
     return q
@@ -86,7 +91,7 @@ def read_waterlevels_continuous_query(table, pointid, db, as_dict=False):
     if pointid:
         q = q.join(models.Well)
         q = q.join(models.Location)
-        q = q.filter(models.Location.PointID == pointid)
+        q = pointid_filter(q, pointid)
     q = q.order_by(table.DateMeasured)
     q = public_release_filter(q)
     return q
@@ -101,10 +106,17 @@ def read_waterlevels_manual_query(pointid, db, as_dict=False):
     if pointid:
         q = q.join(models.Well)
         q = q.join(models.Location)
-        q = q.filter(models.Location.PointID == pointid)
+        q = pointid_filter(q, pointid)
     q = q.order_by(models.WaterLevels.DateMeasured)
     q = public_release_filter(q)
     return q
+
+
+def read_equipment(pointid, db):
+    q = db.query(models.Equipment)
+    q = q.join(models.Location)
+    q = pointid_filter(q, pointid)
+    return q.all()
 
 
 def read_well(pointid, db):
@@ -164,6 +176,5 @@ def locations_feature_collection(locations):
     }
 
     return content
-
 
 # ============= EOF =============================================

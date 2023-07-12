@@ -2,10 +2,9 @@
 {% block title %}Location View {{ location.PointID }}{% endblock %}
 {% block head %}
     {{ super() }}
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
 
+    {% include "map_head.html" %}
     <style>
         img {
             float: left;
@@ -16,6 +15,12 @@
             border: cadetblue 3px solid;
         }
 
+        #map {
+            width: 100%;
+            height: 400px;
+            position: absolute;
+            z-index: 1;
+        }
     </style>
 
 {% endblock %}
@@ -43,10 +48,10 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-sm-6">
-                <div id="map" style="width: 100%; height: 400px;"></div>
+            <div class="col-6" style="height: 400px">
+                {%  include "map_include.html" %}
             </div>
-            <div class="col-sm-6">
+            <div class="col-6">
                 <div id='chart'
                      class='chart'></div>
             </div>
@@ -150,111 +155,37 @@
 {##}
 {#    </script>#}
     <script>
-        $('#sensitive_table').DataTable({
-                        paging: false,
-                        searching: false,
-                        scrollY: 300,
-                        info: false,
-                        ajax: {
-                            url: '/locations/pointid/{{ location.PointID }}/sensitive',
-                            dataSrc: function(d){
-                                return Object.keys(d).map(function(key) {
-                                    return {'name': key, 'value': d[key]}
-                                })
-                            }
-                        },
-                        columns: [
-                            { data: 'name'},
-                            { data: 'value' },
-                        ]
-                    })
-    </script>
-    {# chart loading script #}
-    <script type='text/javascript'>
-            let graphs = {{ graphJSON | safe }}
+        {# chart loading script #}
+        let graphs = {{ graphJSON | safe }}
 
-            Plotly.plot('chart', graphs,{});
+        Plotly.plot('chart', graphs,{});
 
-    </script>
-
-
-    {# map loading script #}
-    <script>
-        mapboxgl.accessToken = 'pk.eyJ1IjoiamFrZXJvc3N3ZGkiLCJhIjoiY2s3M3ZneGl4MGhkMDNrcjlocmNuNWg4bCJ9.4r1DRDQ_ja0fV2nnmlVT0A';
-        const map = new mapboxgl.Map({
-            container: 'map', // container ID
-            // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-            style: 'mapbox://styles/mapbox/streets-v12', // style URL
-            center: {{ location.geometry.coordinates }}, // starting position [lng, lat]
-            zoom: 12 // starting zoom
-        });
-
-        map.on("load", ()=>{
-            map.addSource('places', {
-                'type': 'geojson',
-                'data': {
-                    'type': 'FeatureCollection',
-                    'features': [
-                        {
-                            'type': 'Feature',
-                            'properties': {
-                                'description':
-                                    '<strong>{{ location.PointID }}</strong><p>{{ location.AlternateSiteID }}</p>',
-                                'icon': 'marker'
-                            },
-                            'geometry': {
-                                'type': 'Point',
-                                'coordinates': {{ location.geometry.coordinates }}
-                            }
-                        }
-                    ]
-                }})
-            map.addLayer({
-                'id': 'places',
-                'type': 'circle',
-                'source': 'places',
-                'paint': {
-                    'circle-color': '#4264fb',
-                    'circle-radius': 6,
-                    'circle-stroke-width': 2,
-                    'circle-stroke-color': '#ffffff'
-                }
+        const tokenurl = window.location.origin+'/mapboxtoken'
+        fetch(tokenurl)
+            .then(response => response.json())
+            .then(data => {
+                mapboxgl.accessToken = data.token;
+                initMap({{ location.geometry.coordinates }}, 12, '/locations/pointid/{{ location.PointID }}/geojson');
             });
-        });
-    </script>
 
-
-    {#data table loading script#}
-    <script>
-        {#const columns = [#}
-        {#    { data: 'name'},#}
-        {#    { data: 'value' },#}
-        {#]#}
-        {#const lat = {{ location.geometry.coordinates[1] }}#}
-        {#const lon = {{ location.geometry.coordinates[0] }}#}
-        {##}
-        {#$('#macrostrat_data').DataTable({columns: columns,#}
-        {#    paging: false,#}
-        {#    searching: false,#}
-        {#    scrollY: 300,#}
-        {#    info: false,#}
-        {#    sorting: false,#}
-        {#    ajax: {url: 'https://macrostrat.org/api/v2/mobile/point?lat='+lat+'&lng='+lon,#}
-        {#        dataSrc: function(d){#}
-        {#            console.log('fasd', d)#}
-        {#            let data =  d.success.data#}
-        {##}
-        {#            return [{'name':'Name','value': data['name']},#}
-        {#                {'name': 'Age', 'value': data['age']},#}
-        {#                {'name': 'Description', 'value': data['desc']},#}
-        {#                {'name': 'Stratigraphic Unit', 'value': data['strat_unit']},#}
-        {#                {'name': 'Map', 'value': data['map_ref']['name']},#}
-        {#                {'name': 'Map Source', 'value': data['map_ref']['ref_source']},#}
-        {#                {'name': 'Map Year', 'value': data['map_ref']['ref_year']}#}
-        {#            ]#}
-        {#        }#}
-        {#    }})#}
-
+        $('#sensitive_table').DataTable({
+            paging: false,
+            searching: false,
+            scrollY: 300,
+            info: false,
+            ajax: {
+                url: '/locations/pointid/{{ location.PointID }}/sensitive',
+                dataSrc: function(d){
+                    return Object.keys(d).map(function(key) {
+                        return {'name': key, 'value': d[key]}
+                    })
+                }
+            },
+            columns: [
+                { data: 'name'},
+                { data: 'value' },
+            ]
+        })
 
         $('#location_table').DataTable({
             paging: false,
@@ -295,6 +226,7 @@
             ]
         } );
     </script>
+
 {% endblock %}
 {% block footer %}
     <bold>Disclaimer:</bold><br/>

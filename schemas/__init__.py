@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from datetime import datetime, date
 from typing import Union, Optional
 from uuid import UUID
 
@@ -40,6 +41,28 @@ class Location(ORMBaseModel):
     elevation_method: Union[str, None]  # = Field(..., alias="elevation_method")
 
     geometry: Optional[dict] = None
+
+
+class Equipment(ORMBaseModel):
+    PointID: str
+    LocationId: UUID
+    EquipmentType: Union[str, None]
+    Model: Union[str, None]
+    SerialNo: Union[str, None]
+    DateInstalled: Union[date, None]
+    DateRemoved: Union[date, None]
+    RecordingInterval: Union[int, None]
+    Equipment_Notes: Union[str, None]
+
+
+class OwnersData(ORMBaseModel):
+    FirstName: Union[str, None]
+    LastName: Union[str, None]
+    OwnerKey: Union[str, None]
+    Email: Union[str, None]
+    CellPhone: Union[str, None]
+    Phone: Union[str, None]
+    MailingAddress: Union[str, None]
 
 
 class LocationJSONLD(Location):
@@ -101,6 +124,5 @@ class Well(ORMBaseModel):
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
 
     pods: Optional[list] = None
-
 
 # ============= EOF =============================================

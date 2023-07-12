@@ -32,6 +32,15 @@ function initMap(center, zoom, dataurl){
         closeOnClick: false
     });
 
+    var geocoder = new MapboxGeocoder({ accessToken: mapboxgl.accessToken ,
+        flyTo: {zoom: 10,
+        },
+
+        mapboxgl: mapboxgl
+    });
+
+    document.getElementById('geocoder-container').appendChild(geocoder.onAdd(map));
+
     map.on('mouseenter', 'wells', (e) => {
         map.getCanvas().style.cursor = 'pointer';
 

@@ -17,7 +17,7 @@ import io
 import json
 import os
 import sys
-from typing import Annotated
+from typing import Annotated, List
 from uuid import UUID
 
 import plotly
@@ -48,7 +48,7 @@ from crud import (
     read_ose_pod,
     read_waterlevels_acoustic_query,
     locations_feature_collection,
-    geometry_filter,
+    geometry_filter, read_equipment, pointid_filter,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -107,30 +107,30 @@ def safe_json(d):
         if isinstance(v, dict):
             safe_json(v)
 
-
-@router.get("/pointid/{pointid}/sensitive")
-def read_sensitive(
-    pointid: str,
-    # current_user: Annotated[User, Depends(get_current_active_user)],
-    db: Session = Depends(get_db),
-):
-    # print('asf', current_user)
-    q = db.query(models.Location, models.Well, models.OwnersData)
-    q = q.join(models.Well)
-    q = q.join(models.OwnerLink)
-    q = q.join(models.OwnersData)
-
-    q = q.filter(models.Location.PointID == pointid)
-
-    loc, well, ownersdata = q.first()
-
-    return {
-        "Name": f"{ownersdata.FirstName} {ownersdata.LastName}",
-        "Email": ownersdata.Email,
-        "Phone": ownersdata.Phone,
-        "Cell": ownersdata.CellPhone,
-    }
-    # return {'name': ownersdata.FirstName, 'last_name': ownersdata.LastName}
+#
+# @router.get("/pointid/{pointid}/sensitive")
+# def read_sensitive(
+#         pointid: str,
+#         # current_user: Annotated[User, Depends(get_current_active_user)],
+#         db: Session = Depends(get_db),
+# ):
+#     # print('asf', current_user)
+#     q = db.query(models.Location, models.Well, models.OwnersData)
+#     q = q.join(models.Well)
+#     q = q.join(models.OwnerLink)
+#     q = q.join(models.OwnersData)
+#
+#     q = q.filter(models.Location.PointID == pointid)
+#
+#     loc, well, ownersdata = q.first()
+#
+#     return {
+#         "Name": f"{ownersdata.FirstName} {ownersdata.LastName}",
+#         "Email": ownersdata.Email,
+#         "Phone": ownersdata.Phone,
+#         "Cell": ownersdata.CellPhone,
+#     }
+#     # return {'name': ownersdata.FirstName, 'last_name': ownersdata.LastName}
 
 
 @router.get("/photo/{photoid}")
@@ -233,7 +233,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-    request: Request, pointid: str, db: Session = Depends(get_db)
+        request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -252,6 +252,66 @@ def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
         loc = Response(status_code=HTTP_200_OK)
 
     return loc
+
+
+# ====== Detail ==================================================
+
+
+@router.get('/detail/{pointid}', response_class=HTMLResponse)
+def location_detail(request: Request, pointid: str):
+    return templates.TemplateResponse(
+        "location_detail_view.html",
+        {
+            "request": request,
+            "pointid": pointid,
+            # "location": loc.dict() if loc else {},
+            # "well": well,
+            # "pod_url": well.pod_url,
+            # "pods": pods,
+            # "graphJSON": graphJSON,
+        },
+    )
+
+@router.get('/{pointid}/owners', response_model=schemas.OwnersData)
+def location_detail_owners(pointid: str, db: Session = Depends(get_db)):
+    q = db.query(models.Location, models.Well, models.OwnersData)
+    q = q.join(models.Well)
+    q = q.join(models.OwnerLink)
+    q = q.join(models.OwnersData)
+
+    q = q.filter(models.Location.PointID == pointid)
+
+    loc, well, ownersdata = q.first()
+    return ownersdata
+#
+#     q = q.filter(models.Location.PointID == pointid)
+#
+#     loc, well, ownersdata = q.first()
+
+@router.get("/{pointid}/location", response_model=schemas.Location)
+def read_location_pointid_location(pointid: str, db: Session = Depends(get_db)):
+    loc = get_location(pointid, db)
+    if loc is None:
+        loc = Response(status_code=HTTP_200_OK)
+
+    return loc
+
+
+@router.get("/{pointid}/well", response_model=schemas.Well)
+def read_location_pointid_well(pointid: str, db: Session = Depends(get_db)):
+    well = read_well(pointid, db)
+    if well is None:
+        well = Response(status_code=HTTP_200_OK)
+
+    return well
+
+
+@router.get("/{pointid}/equipment", response_model=List[schemas.Equipment])
+def read_location_pointid_equipment(pointid: str, db: Session = Depends(get_db)):
+    equipment = read_equipment(pointid, db)
+    if equipment is None:
+        equipment = Response(status_code=HTTP_200_OK)
+    return equipment
 
 
 # Views ==========================================================
@@ -344,6 +404,5 @@ def get_location(pointid, db):
     q = q.filter(models.Location.PointID == pointid)
     q = public_release_filter(q)
     return q.first()
-
 
 # ============= EOF =============================================

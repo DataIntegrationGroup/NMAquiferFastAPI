@@ -185,6 +185,20 @@ class OwnerLink(Base):
     OwnerKey = Column(String(50), ForeignKey("OwnersData.OwnerKey"))
 
 
+class Equipment(Base):
+    __tablename__ = "Equipment"
+    ID = Column(Integer, primary_key=True)
+    PointID = Column(String(50))
+    LocationId = Column(GUID, ForeignKey("Location.LocationId"))
+    EquipmentType = Column(String(50))
+    Model = Column(String(50))
+    SerialNo = Column(String(50))
+    DateInstalled = Column(DateTime)
+    DateRemoved = Column(DateTime)
+    RecordingInterval = Column(Integer)
+    Equipment_Notes = Column(String(50), name="Equipment Notes")
+
+
 class Well(Base):
     __tablename__ = "WellData"
     # LocationId = Column(GUID, ForeignKey("Location.LocationId"))
@@ -320,6 +334,5 @@ class WaterLevels(Base, MeasurementMixin):
             return self.lu_data_quality.Meaning
         except AttributeError:
             return ""
-
 
 # ============= EOF =============================================

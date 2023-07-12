@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Location View {{ pointid }}{% endblock %}
+{% block head %}
+    {{ super() }}
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+
+    {% include "map_head.html" %}
+    <style>
+        img {
+            float: left;
+            width:  300px;
+            height: 300px;
+            object-fit: cover;
+            padding: 10px;
+            border: cadetblue 3px solid;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            position: absolute;
+            z-index: 1;
+        }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+    <h1 style="text-align: center">NMBGMR Groundwater Network</h1>
+    <h2 style="text-align: center">{{ pointid }}</h2>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-6">
+                <h2>Location</h2>
+                <table id="locationtable" class="display compact">
+                   <thead>
+                   <tr><th>Name</th><th>Value</th></tr>
+                   </thead>
+                </table>
+            </div>
+            <div class="col-6">
+                <h2>Well</h2>
+                <table id="welltable" class="display compact">
+                    <thead>
+                    <tr><th>Name</th><th>Value</th></tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <h2>Owners</h2>
+                <table id="ownerstable" class="display compact">
+                    <thead>
+                    <tr><th>Name</th><th>Value</th></tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="col-6">
+                <h2>Equipment</h2>
+                <table id="equipmenttable" class="display compact">
+                    <thead>
+                        <tr>
+                            <th>EquipmentType</th>
+                            <th>Model</th>
+                            <th>SerialNo</th>
+                            <th>Date Installed</th>
+                            <th>Date Removed</th>
+
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        const totable = function(d){
+            return Object.keys(d).map(function(key) {
+                return {'name': key, 'value': d[key]}})}
+        const columns = [
+            { data: 'name'},
+            { data: 'value' },
+        ]
+        const loadtable = function(id, tag){
+            $(id).DataTable({
+                    ordering: false,
+                    searching: false,
+                    paging: false,
+                    info: false,
+                    columns: columns,
+                    ajax: {
+                        url: '/locations/{{ pointid }}/'+tag,
+                        dataSrc: totable}
+                }
+            )
+
+        }
+        const loadrows=function(id, tag){
+            $(id).DataTable({
+                ordering: false,
+                searching: false,
+                paging: false,
+                info: false,
+            })
+
+        }
+
+        loadtable('#locationtable', 'location')
+        loadtable('#welltable', 'well')
+        loadtable('#ownerstable', 'owners')
+
+        const ecolumns = [
+            { data: 'EquipmentType'},
+            { data: 'Model'},
+            { data: 'SerialNo'},
+            { data: 'DateInstalled'},
+            { data: 'DateRemoved'},
+
+        ]
+        $('#equipmenttable').DataTable({
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false,
+            columns: ecolumns,
+            ajax: {
+                url: '/locations/{{ pointid }}/equipment',
+                dataSrc: ''
+            }
+        })
+
+        {#$('#welltable').DataTable({#}
+        {#    ordering: false,#}
+        {#    searching: false,#}
+        {#    paging: false,#}
+        {#    info: false,#}
+        {#    columns: columns,#}
+        {#    ajax: {#}
+        {#        url: '/locations/{{ pointid }}/well',#}
+        {#        dataSrc: totable}#}
+        {# })#}
+
+    </script>
+{% endblock %}
