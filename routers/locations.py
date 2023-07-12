@@ -261,13 +261,19 @@ def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
 
 
 @router.get("/detail/{pointid}", response_class=HTMLResponse)
-def location_detail(request: Request, pointid: str):
+def location_detail(request: Request, pointid: str, db: Session = Depends(get_db)):
+
+    loc = get_location(pointid, db)
+    if loc is not None:
+        loc = schemas.Location.from_orm(loc)
+
     return templates.TemplateResponse(
         "location_detail_view.html",
         {
             "request": request,
             "pointid": pointid,
-            # "location": loc.dict() if loc else {},
+            "location": loc.dict() if loc else {},
+            "graphJSON": make_hydrograph(pointid, db),
             # "well": well,
             # "pod_url": well.pod_url,
             # "pods": pods,
@@ -333,6 +339,33 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 # templates = Jinja2Templates(directory="templates")
 
+def make_hydrograph(pointid, db):
+    fig = go.Figure()
+    manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
+    mxs = [w.DateMeasured for w in manual_waterlevels]
+    mys = [w.DepthToWaterBGS for w in manual_waterlevels]
+
+    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual WL"))
+
+    continuous_waterlevels = read_waterlevels_pressure_query(
+        pointid, db, as_dict=True
+    ).all()
+    if not continuous_waterlevels:
+        continuous_waterlevels = read_waterlevels_acoustic_query(
+            pointid, db, as_dict=True
+        ).all()
+
+    pxs = [w.DateMeasured for w in continuous_waterlevels]
+    pys = [w.DepthToWaterBGS for w in continuous_waterlevels]
+    fig.add_trace(go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL"))
+
+    fig.update_layout(
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
+        xaxis={"title": "Date Measured"},
+        yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
+    )
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
 
 @router.get("/view/{pointid}", response_class=HTMLResponse)
 def location_view(request: Request, pointid: str, db: Session = Depends(get_db)):
@@ -361,32 +394,6 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     #     well = wells[0]
     #     pod_url = well.pod_url
 
-    fig = go.Figure()
-    manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
-    mxs = [w.DateMeasured for w in manual_waterlevels]
-    mys = [w.DepthToWaterBGS for w in manual_waterlevels]
-
-    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual WL"))
-
-    continuous_waterlevels = read_waterlevels_pressure_query(
-        pointid, db, as_dict=True
-    ).all()
-    if not continuous_waterlevels:
-        continuous_waterlevels = read_waterlevels_acoustic_query(
-            pointid, db, as_dict=True
-        ).all()
-
-    pxs = [w.DateMeasured for w in continuous_waterlevels]
-    pys = [w.DepthToWaterBGS for w in continuous_waterlevels]
-    fig.add_trace(go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL"))
-
-    fig.update_layout(
-        margin={"l": 0, "r": 0, "t": 0, "b": 0},
-        xaxis={"title": "Date Measured"},
-        yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
-    )
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-
     return templates.TemplateResponse(
         "location_view.html",
         {
@@ -395,7 +402,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
             "well": well,
             "pod_url": well.pod_url,
             # "pods": pods,
-            "graphJSON": graphJSON,
+            "graphJSON": make_hydrograph(pointid, db),
         },
     )
 

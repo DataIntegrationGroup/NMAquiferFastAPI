@@ -155,6 +155,16 @@
 {##}
 {#    </script>#}
     <script>
+
+        fetch('/locations/pointid/{{ location.PointID }}/photo')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(p => {
+                            var img = document.createElement('img')
+                            img.src = '/locations/photo/'+ p.OLEPath
+                            $('#photocontainer').prepend(img)
+                        })
+                    })
         {# chart loading script #}
         let graphs = {{ graphJSON | safe }}
 

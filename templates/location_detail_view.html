@@ -44,6 +44,15 @@
             </div>
         </div>
         <div class="row">
+            <div class="row">
+                <div class="col-6" style="height: 400px">
+                    {%  include "map_include.html" %}
+                </div>
+                <div class="col-6">
+                    <div id='chart'
+                         class='chart'></div>
+                </div>
+            </div>
             <div class="col-5">
                 <h2>Location</h2>
                 <table id="locationtable" class="display compact">
@@ -65,7 +74,6 @@
                 </table>
             </div>
         </div>
-
         <div class="row">
             <div class="col-6">
                 <h2>Owners</h2>
@@ -90,6 +98,9 @@
                 </table>
             </div>
         </div>
+        <div class="row">
+            <div id="photocontainer"></div>
+        </div>
     </div>
 
     <script>
@@ -98,7 +109,7 @@
             var pointid = $('#pointid_entry').val();
             window.location.href = '/locations/detail/'+pointid;
         }
-        var pointid = {{ pointid|tojson }}
+        var pointid = {{ location.PointID|tojson }}
 
         const totable = function(d){
             return Object.keys(d).map(function(key) {
@@ -184,5 +195,25 @@
         {#        dataSrc: totable}#}
         {# })#}
 
+            let graphs = {{ graphJSON | safe }}
+            Plotly.plot('chart', graphs,{});
+
+        const tokenurl = window.location.origin+'/mapboxtoken'
+        fetch(tokenurl)
+            .then(response => response.json())
+            .then(data => {
+                mapboxgl.accessToken = data.token;
+                initMap({{ location.geometry.coordinates }}, 12, '/locations/pointid/'+ pointid +'/geojson');
+            });
+
+        fetch('/locations/pointid/{{ location.PointID }}/photo')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(p => {
+                    var img = document.createElement('img')
+                    img.src = '/locations/photo/'+ p.OLEPath
+                    $('#photocontainer').prepend(img)
+                })
+            })
     </script>
 {% endblock %}
