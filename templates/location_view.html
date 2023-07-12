@@ -30,10 +30,10 @@
     <h2 style="text-align: center">{{ location.PointID }}</h2>
 
     <div class="container-fluid">
-        <div class="row">
-            <table id="sensitive_table" class="display compact">
-            </table>
-        </div>
+{#        <div class="row">#}
+{#            <table id="sensitive_table" class="display compact">#}
+{#            </table>#}
+{#        </div>#}
         <div class="row">
             <div class="col-sm">
                 <form>
@@ -168,24 +168,24 @@
                 initMap({{ location.geometry.coordinates }}, 12, '/locations/pointid/{{ location.PointID }}/geojson');
             });
 
-        $('#sensitive_table').DataTable({
-            paging: false,
-            searching: false,
-            scrollY: 300,
-            info: false,
-            ajax: {
-                url: '/locations/pointid/{{ location.PointID }}/sensitive',
-                dataSrc: function(d){
-                    return Object.keys(d).map(function(key) {
-                        return {'name': key, 'value': d[key]}
-                    })
-                }
-            },
-            columns: [
-                { data: 'name'},
-                { data: 'value' },
-            ]
-        })
+        {#$('#sensitive_table').DataTable({#}
+        {#    paging: false,#}
+        {#    searching: false,#}
+        {#    scrollY: 300,#}
+        {#    info: false,#}
+        {#    ajax: {#}
+        {#        url: '/locations/pointid/{{ location.PointID }}/sensitive',#}
+        {#        dataSrc: function(d){#}
+        {#            return Object.keys(d).map(function(key) {#}
+        {#                return {'name': key, 'value': d[key]}#}
+        {#            })#}
+        {#        }#}
+        {#    },#}
+        {#    columns: [#}
+        {#        { data: 'name'},#}
+        {#        { data: 'value' },#}
+        {#    ]#}
+        {#})#}
 
         $('#location_table').DataTable({
             paging: false,
