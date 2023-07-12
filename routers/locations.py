@@ -291,15 +291,11 @@ def location_detail_owners(pointid: str, db: Session = Depends(get_db)):
     q = q.join(models.OwnersData)
 
     q = q.filter(models.Location.PointID == pointid)
-
-    loc, well, ownersdata = q.first()
-    return ownersdata
-
-
-#
-#     q = q.filter(models.Location.PointID == pointid)
-#
-#     loc, well, ownersdata = q.first()
+    try:
+        loc, well, ownersdata = q.first()
+        return ownersdata
+    except TypeError:
+        pass
 
 
 @router.get("/{pointid}/location", response_model=schemas.Location)

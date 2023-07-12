@@ -31,6 +31,19 @@
 
     <div class="container-fluid">
         <div class="row">
+            <div style="display: flex; flex-direction: row">
+                <div>
+                    <label for="pointid_entry">PointID</label>
+                    <input type="text" id="pointid_entry" name="pointid_entry" value="{{ pointid }}"><br><br>
+                </div>
+                <div>
+                    <div class="pull-left"><button class="btn btn-outline-primary"
+                                                   type="button" onclick="loadpoint()">Load Point</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-5">
                 <h2>Location</h2>
                 <table id="locationtable" class="display compact">
@@ -72,7 +85,6 @@
                             <th>SerialNo</th>
                             <th>Date Installed</th>
                             <th>Date Removed</th>
-
                         </tr>
                     </thead>
                 </table>
@@ -80,9 +92,14 @@
         </div>
     </div>
 
-
-
     <script>
+
+        function loadpoint(){
+            var pointid = $('#pointid_entry').val();
+            window.location.href = '/locations/detail/'+pointid;
+        }
+        var pointid = {{ pointid|tojson }}
+
         const totable = function(d){
             return Object.keys(d).map(function(key) {
                 return {'name': key, 'value': d[key]}})}
@@ -98,7 +115,7 @@
                     info: false,
                     columns: columns,
                     ajax: {
-                        url: '/locations/{{ pointid }}/'+tag,
+                        url: '/locations/'+pointid+'/'+tag,
                         dataSrc: totable}
                 }
             )
@@ -133,7 +150,7 @@
             info: false,
             columns: ecolumns,
             ajax: {
-                url: '/locations/{{ pointid }}/equipment',
+                url: '/locations/'+pointid+'/equipment',
                 dataSrc: ''
             }
         })
@@ -152,7 +169,7 @@
             info: false,
             columns: pcolumns,
             ajax: {
-                url: '/locations/{{ pointid }}/projects',
+                url: '/locations/'+pointid+'/projects',
                 dataSrc: ''
             }
         })

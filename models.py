@@ -176,6 +176,17 @@ class OwnersData(Base):
     CellPhone = Column(String(50))
     Phone = Column(String(50))
     MailingAddress = Column(String(50))
+    MailCity = Column(String(50))
+    MailState = Column(String(50))
+    MailZipCode = Column(String(50))
+    PhysicalAddress = Column(String(50))
+    PhysicalCity = Column(String(50))
+    PhysicalState = Column(String(50))
+    PhysicalZipCode = Column(String(50))
+    SecondLastName = Column(String(50))
+    SecondFirstName = Column(String(50))
+    SecondCtctEmail = Column(String(50))
+    SecondCtctPhone = Column(String(50))
 
 
 class OwnerLink(Base):

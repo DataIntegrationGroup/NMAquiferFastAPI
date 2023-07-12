@@ -70,6 +70,17 @@ class OwnersData(ORMBaseModel):
     CellPhone: Union[str, None]
     Phone: Union[str, None]
     MailingAddress: Union[str, None]
+    MailCity: Union[str, None]
+    MailState: Union[str, None]
+    MailZipCode: Union[str, None]
+    PhysicalAddress: Union[str, None]
+    PhysicalCity: Union[str, None]
+    PhysicalState: Union[str, None]
+    PhysicalZipCode: Union[str, None]
+    SecondLastName: Union[str, None]
+    SecondFirstName: Union[str, None]
+    SecondCtctEmail: Union[str, None]
+    SecondCtctPhone: Union[str, None]
 
 
 class LocationJSONLD(Location):
