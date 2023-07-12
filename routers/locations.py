@@ -262,7 +262,6 @@ def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/detail/{pointid}", response_class=HTMLResponse)
 def location_detail(request: Request, pointid: str, db: Session = Depends(get_db)):
-
     loc = get_location(pointid, db)
     if loc is not None:
         loc = schemas.Location.from_orm(loc)
@@ -338,6 +337,7 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 
 # templates = Jinja2Templates(directory="templates")
+
 
 def make_hydrograph(pointid, db):
     fig = go.Figure()
