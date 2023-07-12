@@ -44,13 +44,16 @@ class Location(Base):
     PointID = Column(String(50))
     SiteID = Column(String(200))
     AlternateSiteID = Column(String(50))
+    SiteNames = Column(String(255))
 
     PublicRelease = Column(Boolean)
     Easting = Column(Integer)
     Northing = Column(Integer)
     Altitude = Column(Float)
-    AltitudeMethod = Column(String(50), ForeignKey("LU_AltitudeMethod.Code"))
 
+    LocationNotes = Column(String(255))
+
+    AltitudeMethod = Column(String(50), ForeignKey("LU_AltitudeMethod.Code"))
     lu_elevation_method = relationship("LU_AltitudeMethod", uselist=False)
 
     @property

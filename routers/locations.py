@@ -280,6 +280,14 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
         },
     )
 
+@router.get("/{pointid}/notes")
+def location_notes(pointid: str, db: Session = Depends(get_db)):
+    loc = get_location(pointid, db)
+    if loc is None:
+        loc = Response(status_code=HTTP_200_OK)
+
+    return loc.LocationNotes
+
 
 @router.get("/{pointid}/projects", response_model=List[schemas.ProjectLocations])
 def location_projects(pointid: str, db: Session = Depends(get_db)):
