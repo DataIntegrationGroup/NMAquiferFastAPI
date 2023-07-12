@@ -116,6 +116,7 @@ def read_equipment(pointid, db):
     q = db.query(models.Equipment)
     q = q.join(models.Location)
     q = pointid_filter(q, pointid)
+    q = q.order_by(models.Equipment.DateInstalled.desc())
     return q.all()
 
 
