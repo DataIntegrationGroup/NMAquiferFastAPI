@@ -280,6 +280,7 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
         },
     )
 
+
 @router.get("/{pointid}/notes")
 def location_notes(pointid: str, db: Session = Depends(get_db)):
     loc = get_location(pointid, db)
