@@ -11,8 +11,10 @@
             width:  300px;
             height: 300px;
             object-fit: cover;
-            padding: 10px;
+            padding: 5px;
             border: cadetblue 3px solid;
+            border-radius: 5px;
+            margin: 2px
         }
 
         #map {
@@ -24,7 +26,15 @@
         h4 {
             border: #3498db 3px solid;
             border-radius: 5px;
+            background: #e5c6c6;
         }
+        .row {
+            border: #79878f 3px solid;
+            border-radius: 10px;
+            padding: 5px;
+            margin: 2px;
+        }
+
     </style>
 
 {% endblock %}
@@ -48,16 +58,16 @@
             </div>
         </div>
         <div class="row">
-            <div class="row">
-                <div class="col-6" style="height: 400px">
-                    {%  include "map_include.html" %}
-                </div>
-                <div class="col-6">
-                    <div id='chart'
-                         class='chart'></div>
-                </div>
+            <div class="col-6" style="height: 400px">
+                {%  include "map_include.html" %}
             </div>
-            <div class="col-5">
+            <div class="col-sm-6">
+                <div id='chart'
+                     class='chart'></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-5">
                 <h4>Location</h4>
                 <table id="locationtable" class="display compact">
                    <thead>
@@ -65,11 +75,11 @@
                    </thead>
                 </table>
             </div>
-            <div class="col-2">
+            <div class="col-sm-2">
                 <h4>Projects</h4>
                 <table id="projectstable" class="display compact"></table>
             </div>
-            <div class="col-5">
+            <div class="col-sm-5">
                 <h4>Well</h4>
                 <table id="welltable" class="display compact">
                     <thead>
@@ -142,6 +152,7 @@
                     searching: false,
                     paging: false,
                     info: false,
+
                     columns: columns,
                     ajax: {
                         url: '/locations/'+pointid+'/'+tag,
@@ -150,15 +161,7 @@
             )
 
         }
-        const loadrows=function(id, tag){
-            $(id).DataTable({
-                ordering: false,
-                searching: false,
-                paging: false,
-                info: false,
-            })
 
-        }
 
         loadtable('#locationtable', 'location')
         loadtable('#welltable', 'well')
