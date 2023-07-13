@@ -23,7 +23,7 @@ from crud import get_location
 router = APIRouter(prefix="/usgs", tags=["usgs"])
 
 
-@router.get('/sitemetadata/{pointid}')
+@router.get("/sitemetadata/{pointid}")
 def get_site_metadata(pointid: str, db: Session = Depends(get_db)):
     loc = get_location(pointid, db)
     return get_site_metadata(location=loc)
@@ -44,8 +44,8 @@ def extract_usgs_timeseries(obj):
         # print(ti['variable']['variableName'])
         # if ti['variable']['variableCode'][0]['variableID'] == 52331280:
         if (
-                ti["variable"]["variableName"]
-                == "Depth to water level, ft below land surface"
+            ti["variable"]["variableName"]
+            == "Depth to water level, ft below land surface"
         ):
             for j, tj in enumerate(ti["values"]):
                 values = tj["value"]
@@ -80,4 +80,6 @@ def make_site_record(txt):
             continue
 
         return dict(zip(header, [l.strip() for l in line.split("\t")]))
+
+
 # ============= EOF =============================================

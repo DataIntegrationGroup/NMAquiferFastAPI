@@ -47,7 +47,8 @@ from crud import (
     locations_feature_collection,
     geometry_filter,
     read_equipment,
-    get_location, get_photo_path,
+    get_location,
+    get_photo_path,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
@@ -234,7 +235,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-        request: Request, pointid: str, db: Session = Depends(get_db)
+    request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -272,7 +273,6 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
             "pointid": pointid,
             "location": loc.dict() if loc else {},
             "graphJSON": make_hydrograph(pointid, db, location),
-
             # "well": well,
             "pod_url": well.pod_url,
             # "pods": pods,
@@ -426,6 +426,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
             "graphJSON": make_hydrograph(pointid, db),
         },
     )
+
 
 # End Views ======================================================
 
