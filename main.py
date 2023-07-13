@@ -30,7 +30,7 @@ from app import app
 
 
 from dependencies import get_db
-from routers import locations, wells, waterlevels, ngwmn, collab_net
+from routers import locations, wells, waterlevels, ngwmn, collab_net, usgs
 from starlette.templating import Jinja2Templates
 
 # ===============================================================================
@@ -99,6 +99,7 @@ app.include_router(wells.router)
 app.include_router(waterlevels.router)
 app.include_router(ngwmn.router)
 app.include_router(collab_net.router)
+app.include_router(usgs.router)
 add_pagination(app)
 
 

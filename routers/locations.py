@@ -15,14 +15,12 @@
 # ===============================================================================
 import io
 import json
-import os
 import sys
-from typing import Annotated, List
+from typing import List
 from uuid import UUID
 
 import plotly
 from fastapi import APIRouter, Depends
-from fastapi.encoders import jsonable_encoder
 from fastapi_pagination import LimitOffsetPage, Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 
@@ -30,7 +28,6 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import (
     Response,
-    JSONResponse,
     HTMLResponse,
     StreamingResponse,
     FileResponse,
@@ -50,11 +47,12 @@ from crud import (
     locations_feature_collection,
     geometry_filter,
     read_equipment,
-    pointid_filter,
+    get_location, get_photo_path,
 )
 from dependencies import get_db
 import plotly.graph_objects as go
-from auth import get_current_user, User, get_current_active_user
+
+from routers.usgs import get_usgs_gwl
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
@@ -236,7 +234,7 @@ def read_location_pointid(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/pointid/{pointid}/jsonld", response_model=schemas.LocationJSONLD)
 def read_location_pointid_jsonld(
-    request: Request, pointid: str, db: Session = Depends(get_db)
+        request: Request, pointid: str, db: Session = Depends(get_db)
 ):
     loc = get_location(pointid, db)
     if loc is None:
@@ -262,17 +260,19 @@ def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
 
 @router.get("/detail/{pointid}", response_class=HTMLResponse)
 def location_detail(request: Request, pointid: str, db: Session = Depends(get_db)):
-    loc = get_location(pointid, db)
-    if loc is not None:
-        loc = schemas.Location.from_orm(loc)
+    location = get_location(pointid, db)
+    if location is not None:
+        loc = schemas.Location.from_orm(location)
     well = read_well(pointid, db)
+
     return templates.TemplateResponse(
         "location_detail_view.html",
         {
             "request": request,
             "pointid": pointid,
             "location": loc.dict() if loc else {},
-            "graphJSON": make_hydrograph(pointid, db),
+            "graphJSON": make_hydrograph(pointid, db, location),
+
             # "well": well,
             "pod_url": well.pod_url,
             # "pods": pods,
@@ -348,7 +348,7 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 # templates = Jinja2Templates(directory="templates")
 
 
-def make_hydrograph(pointid, db):
+def make_hydrograph(pointid, db, location):
     fig = go.Figure()
     manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
     mxs = [w.DateMeasured for w in manual_waterlevels]
@@ -367,6 +367,18 @@ def make_hydrograph(pointid, db):
     pxs = [w.DateMeasured for w in continuous_waterlevels]
     pys = [w.DepthToWaterBGS for w in continuous_waterlevels]
     fig.add_trace(go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL"))
+
+    data = get_usgs_gwl(location.SiteID)
+    if data:
+        xs, ys = [], []
+        fig.add_trace(
+            go.Scatter(
+                x=xs,
+                y=ys,
+                mode="lines",
+                name="USGS GWL",
+            )
+        )
 
     fig.update_layout(
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
@@ -415,21 +427,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
         },
     )
 
-
 # End Views ======================================================
-
-
-def get_photo_path(pointid, db):
-    q = db.query(models.WellPhotos)
-    q = q.filter(models.WellPhotos.PointID == pointid)
-    return q.all()
-
-
-def get_location(pointid, db):
-    q = db.query(models.Location)
-    q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
-    return q.first()
 
 
 # ============= EOF =============================================

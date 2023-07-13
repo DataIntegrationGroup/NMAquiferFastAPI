@@ -180,3 +180,14 @@ def locations_feature_collection(locations):
 
 
 # ============= EOF =============================================
+def get_location(pointid, db):
+    q = db.query(models.Location)
+    q = q.filter(models.Location.PointID == pointid)
+    q = public_release_filter(q)
+    return q.first()
+
+
+def get_photo_path(pointid, db):
+    q = db.query(models.WellPhotos)
+    q = q.filter(models.WellPhotos.PointID == pointid)
+    return q.all()

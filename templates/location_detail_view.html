@@ -118,9 +118,20 @@
             </div>
         </div>
         <div class="row">
-            <div class="col">
+            <div class="col-6">
                 <h4>OSE POD</h4>
                 <table id="pod_table" class="display compact">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="col-6">
+                <h4>USGS SiteMetaData</h4>
+                <table id="usgs_sitemetadata_table" class="display compact">
                     <thead>
                     <tr>
                         <th>Name</th>
@@ -150,15 +161,20 @@
             var pointid = $('#pointid_entry').val();
             window.location.href = '/locations/detail/'+pointid;
         }
+        function tousgstable(d){
+            console.log('fasd', d[0])
+            return Object.keys(d[0]).map(function(key) {
+                return {'name': key, 'value': d[0][key]}})
+        }
 
-        const totable = function(d){
+        function totable(d){
             return Object.keys(d).map(function(key) {
                 return {'name': key, 'value': d[key]}})}
         const columns = [
             { data: 'name'},
             { data: 'value' },
         ]
-        const loadtable = function(id, tag){
+        function loadtable(id, tag){
             $(id).DataTable({
                     ordering: false,
                     searching: false,
@@ -178,6 +194,9 @@
         loadtable('#locationtable', 'location')
         loadtable('#welltable', 'well')
         loadtable('#ownerstable', 'owners')
+
+
+
 
         const ecolumns = [
             { data: 'EquipmentType'},
@@ -217,12 +236,22 @@
                 dataSrc: ''
             }
         })
-
+        let dt = $('#usgs_sitemetadata_table').DataTable({
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false,
+            columns: columns,
+            scrollY: '50vh',
+            ajax: {
+                url:'/usgs/sitemetadata/'+pointid,
+                dataSrc: tousgstable}
+        })
         $('#pod_table').DataTable( {
             ordering: false,
             paging: false,
             searching: false,
-            scrollY: 300,
+            scrollY: '50vh',
             info: false,
             ajax:
                 {
