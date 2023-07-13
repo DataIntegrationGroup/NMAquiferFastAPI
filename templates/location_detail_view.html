@@ -170,11 +170,20 @@
         function totable(d){
             return Object.keys(d).map(function(key) {
                 return {'name': key, 'value': d[key]}})}
+
+        function tolocationtable(d){
+            return Object.keys(d).filter(function(key){
+                return key !== 'geometry'
+
+            }).map(function(key) {
+                return {'name': key, 'value': d[key]}})
+
+        }
         const columns = [
             { data: 'name'},
             { data: 'value' },
         ]
-        function loadtable(id, tag){
+        function loadtable(id, tag, parser){
             $(id).DataTable({
                     ordering: false,
                     searching: false,
@@ -184,16 +193,16 @@
                     columns: columns,
                     ajax: {
                         url: '/locations/'+pointid+'/'+tag,
-                        dataSrc: totable}
+                        dataSrc: parser}
                 }
             )
 
         }
 
 
-        loadtable('#locationtable', 'location')
-        loadtable('#welltable', 'well')
-        loadtable('#ownerstable', 'owners')
+        loadtable('#locationtable', 'location', tolocationtable)
+        loadtable('#welltable', 'well', totable)
+        loadtable('#ownerstable', 'owners', totable)
 
 
 

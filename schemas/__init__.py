@@ -41,6 +41,8 @@ class Location(ORMBaseModel):
     elevation_method: Union[str, None]  # = Field(..., alias="elevation_method")
     SiteNames: Union[str, None] = Field(..., alias="site_names")
     SiteID: Union[str, None] = Field(..., alias="site_id")
+    Easting: Union[float, None]
+    Northing: Union[float, None]
     geometry: Optional[dict] = None
 
 
@@ -141,8 +143,6 @@ class Well(ORMBaseModel):
     FormationZone: Union[str, None] = Field(..., alias="formation")
 
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
-
-    pods: Optional[list] = None
 
 
 # ============= EOF =============================================
