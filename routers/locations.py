@@ -262,9 +262,13 @@ def read_location_pointid_geojson(pointid: str, db: Session = Depends(get_db)):
 @router.get("/detail/{pointid}", response_class=HTMLResponse)
 def location_detail(request: Request, pointid: str, db: Session = Depends(get_db)):
     location = get_location(pointid, db)
+    loc = None
     if location is not None:
         loc = schemas.Location.from_orm(location)
     well = read_well(pointid, db)
+    pod_url = ''
+    if well is not None:
+        pod_url = well.pod_url
 
     return templates.TemplateResponse(
         "location_detail_view.html",
@@ -273,10 +277,7 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
             "pointid": pointid,
             "location": loc.dict() if loc else {},
             "graphJSON": make_hydrograph(pointid, db, location),
-            # "well": well,
-            "pod_url": well.pod_url,
-            # "pods": pods,
-            # "graphJSON": graphJSON,f
+            "pod_url": pod_url or ''
         },
     )
 
@@ -286,8 +287,7 @@ def location_notes(pointid: str, db: Session = Depends(get_db)):
     loc = get_location(pointid, db)
     if loc is None:
         loc = Response(status_code=HTTP_200_OK)
-
-    return loc.LocationNotes
+    return loc.LocationNotes or ""
 
 
 @router.get("/{pointid}/projects", response_model=List[schemas.ProjectLocations])
@@ -308,8 +308,8 @@ def location_detail_owners(pointid: str, db: Session = Depends(get_db)):
     try:
         loc, well, ownersdata = q.first()
         return ownersdata
-    except TypeError:
-        pass
+    except TypeError as e:
+        return {}
 
 
 @router.get("/{pointid}/location", response_model=schemas.Location)
@@ -367,18 +367,18 @@ def make_hydrograph(pointid, db, location):
     pxs = [w.DateMeasured for w in continuous_waterlevels]
     pys = [w.DepthToWaterBGS for w in continuous_waterlevels]
     fig.add_trace(go.Scatter(x=pxs, y=pys, mode="lines", name="Continuous WL"))
-
-    data = get_usgs_gwl(location.SiteID)
-    if data:
-        xs, ys = [], []
-        fig.add_trace(
-            go.Scatter(
-                x=xs,
-                y=ys,
-                mode="lines",
-                name="USGS GWL",
+    if location:
+        data = get_usgs_gwl(location.SiteID)
+        if data:
+            xs, ys = [], []
+            fig.add_trace(
+                go.Scatter(
+                    x=xs,
+                    y=ys,
+                    mode="lines",
+                    name="USGS GWL",
+                )
             )
-        )
 
     fig.update_layout(
         margin={"l": 0, "r": 0, "t": 0, "b": 0},

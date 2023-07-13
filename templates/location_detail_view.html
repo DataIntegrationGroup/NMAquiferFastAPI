@@ -149,7 +149,7 @@
 
     <script>
         var pointid = {{ location.PointID|tojson }}
-
+        console.log('fffffffffff', pointid)
         fetch('/locations/'+pointid+'/notes')
             .then(response => response.json())
             .then(data => {
@@ -159,6 +159,7 @@
 
         function loadpoint(){
             var pointid = $('#pointid_entry').val();
+            console.log('loasdfpoinasd')
             window.location.href = '/locations/detail/'+pointid;
         }
         function tousgstable(d){
@@ -204,9 +205,6 @@
         loadtable('#welltable', 'well', totable)
         loadtable('#ownerstable', 'owners', totable)
 
-
-
-
         const ecolumns = [
             { data: 'EquipmentType'},
             { data: 'Model'},
@@ -245,7 +243,7 @@
                 dataSrc: ''
             }
         })
-        let dt = $('#usgs_sitemetadata_table').DataTable({
+        $('#usgs_sitemetadata_table').DataTable({
             ordering: false,
             searching: false,
             paging: false,
@@ -256,39 +254,35 @@
                 url:'/usgs/sitemetadata/'+pointid,
                 dataSrc: tousgstable}
         })
-        $('#pod_table').DataTable( {
-            ordering: false,
+        let options = {ordering: false,
             paging: false,
             searching: false,
             scrollY: '50vh',
             info: false,
-            ajax:
-                {
-                    url: '{{ pod_url |safe }}',
-                    dataSrc: function(d){
-                        console.log(d)
-                        try {
-                            let pod = d['features'][0]['attributes']
-                            $('#water_right').attr('href', pod['nmwrrs_wrs'])
+            columns: columns,}
 
-                            return Object.keys(pod).map(function(key) {
-                                return {'name': key, 'value': pod[key]}
-                            })
-                        } catch (e) {
-                            return []
-                        }
+        {% if pod_url %}
+            options.ajax = {
+                url: '{{ pod_url |safe }}',
+                dataSrc: function(d){
+                    console.log('asdfasfd', d)
+                    try {
+                        let pod = d['features'][0]['attributes']
+                        $('#water_right').attr('href', pod['nmwrrs_wrs'])
 
+                        return Object.keys(pod).map(function(key) {
+                            return {'name': key, 'value': pod[key]}
+                        })
+                    } catch (e) {
+                        return []
                     }
-                },
-            columns: [
-                { data: 'name'},
-                { data: 'value' },
-            ]
-        });
+                }
+            }
+        {% endif %}
 
+        $('#pod_table').DataTable( options)
 
-            let graphs = {{ graphJSON | safe }}
-            Plotly.plot('chart', graphs,{});
+        Plotly.plot('chart', {{ graphJSON | safe }}, {});
 
         const tokenurl = window.location.origin+'/mapboxtoken'
         fetch(tokenurl)
