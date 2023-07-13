@@ -266,7 +266,7 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
     if location is not None:
         loc = schemas.Location.from_orm(location)
     well = read_well(pointid, db)
-    pod_url = ''
+    pod_url = ""
     if well is not None:
         pod_url = well.pod_url
 
@@ -277,7 +277,7 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
             "pointid": pointid,
             "location": loc.dict() if loc else {},
             "graphJSON": make_hydrograph(pointid, db, location),
-            "pod_url": pod_url or ''
+            "pod_url": pod_url or "",
         },
     )
 
