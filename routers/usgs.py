@@ -50,8 +50,7 @@ def extract_usgs_timeseries(obj):
             ti["variable"]["variableName"]
             == "Depth to water level, ft below land surface"
         ):
-
-                # ti["variable"]["variableName"] == 'Groundwater level above NAVD 1988, ft'
+            # ti["variable"]["variableName"] == 'Groundwater level above NAVD 1988, ft'
             # print(ti["variable"]["variableName"])
             for j, tj in enumerate(ti["values"]):
                 values = tj["value"]
@@ -59,11 +58,11 @@ def extract_usgs_timeseries(obj):
                     {
                         "phenomenonTime": values[0]["dateTime"],
                         "result": values[0]["value"],
-                        'j': j
+                        "j": j,
                     }
                 )
 
-    print('asdf', data)
+    print("asdf", data)
 
     return data
 
