@@ -396,7 +396,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     # q = public_release_filter(q)
     # loc = q.first()
     loc = get_location(pointid, db)
-
+    print(loc, 'asdf')
     if loc is not None:
         loc = schemas.Location.from_orm(loc)
     else:
@@ -422,9 +422,9 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
             "request": request,
             "location": loc.dict() if loc else {},
             "well": well,
-            "pod_url": well.pod_url,
+            "pod_url": well.pod_url if well else "",
             # "pods": pods,
-            "graphJSON": make_hydrograph(pointid, db),
+            "graphJSON": make_hydrograph(pointid, db, loc),
         },
     )
 

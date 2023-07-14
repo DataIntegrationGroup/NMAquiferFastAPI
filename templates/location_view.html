@@ -195,7 +195,7 @@
         {#        { data: 'name'},#}
         {#        { data: 'value' },#}
         {#    ]#}
-        {#})#}
+        {# } )#}
 
         $('#location_table').DataTable({
             paging: false,
@@ -207,34 +207,38 @@
             {#    { data: 'value' },#}
             {#]#}
         })
-        $('#pod_table').DataTable( {
-            paging: false,
+
+        let options ={paging: false,
             searching: false,
             scrollY: 300,
             info: false,
-            ajax:
-                {
-                    url: '{{ pod_url |safe }}',
-                    dataSrc: function(d){
-                        console.log(d)
-                        try {
-                            let pod = d['features'][0]['attributes']
-                            $('#water_right').attr('href', pod['nmwrrs_wrs'])
-
-                            return Object.keys(pod).map(function(key) {
-                                return {'name': key, 'value': pod[key]}
-                            })
-                        } catch (e) {
-                            return []
-                        }
-
-                    }
-                },
             columns: [
                 { data: 'name'},
                 { data: 'value' },
-            ]
-        } );
+            ]}
+
+        {% if pod_url %}
+            options.ajax = {
+                url: '{{ pod_url |safe }}',
+                dataSrc: function(d){
+                    console.log(d)
+                    try {
+                        let pod = d['features'][0]['attributes']
+                        $('#water_right').attr('href', pod['nmwrrs_wrs'])
+
+                        return Object.keys(pod).map(function(key) {
+                            return {'name': key, 'value': pod[key]}
+                        })
+                    } catch (e) {
+                        return []
+                    }
+
+                }
+            }
+
+        {% endif %}
+        $('#pod_table').DataTable( options);
+
     </script>
 
 {% endblock %}
