@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import pprint
+
 import requests
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -38,6 +40,7 @@ def get_usgs_gwl(siteid):
 
 def extract_usgs_timeseries(obj):
     ts = obj["value"]["timeSeries"]
+    # pprint.pprint(obj)
     data = []
     for i, ti in enumerate(ts):
         # print(ti.keys(), ti['variable'].keys(), ti['variable']['variableCode'][0])
@@ -47,14 +50,20 @@ def extract_usgs_timeseries(obj):
             ti["variable"]["variableName"]
             == "Depth to water level, ft below land surface"
         ):
+
+                # ti["variable"]["variableName"] == 'Groundwater level above NAVD 1988, ft'
+            # print(ti["variable"]["variableName"])
             for j, tj in enumerate(ti["values"]):
                 values = tj["value"]
                 data.append(
                     {
                         "phenomenonTime": values[0]["dateTime"],
                         "result": values[0]["value"],
+                        'j': j
                     }
                 )
+
+    print('asdf', data)
 
     return data
 

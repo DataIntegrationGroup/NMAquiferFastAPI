@@ -370,18 +370,19 @@ def make_hydrograph(pointid, db, location):
     if location:
         data = get_usgs_gwl(location.SiteID)
         if data:
-            xs, ys = [], []
+            xs = [d["phenomenonTime"] for d in data]
+            ys = [d["result"] for d in data]
             fig.add_trace(
                 go.Scatter(
                     x=xs,
                     y=ys,
-                    mode="lines",
+                    mode="markers",
                     name="USGS GWL",
                 )
             )
 
     fig.update_layout(
-        margin={"l": 0, "r": 0, "t": 0, "b": 0},
+        margin={"l": 20, "r": 10, "t": 35, "b": 10},
         xaxis={"title": "Date Measured"},
         yaxis={"title": "Depth to Water BGS (ft)", "autorange": "reversed"},
     )
