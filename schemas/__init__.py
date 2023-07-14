@@ -37,10 +37,10 @@ class Location(ORMBaseModel):
     LocationId: UUID
     PointID: str
     PublicRelease: bool
-    AlternateSiteID: Union[str, None] #= Field(..., alias="alternate_site_id")
+    AlternateSiteID: Union[str, None]  # = Field(..., alias="alternate_site_id")
     elevation_method: Union[str, None]  # = Field(..., alias="elevation_method")
-    SiteNames: Union[str, None] #= Field(..., alias="site_names")
-    SiteID: Union[str, None] #= Field(..., alias="site_id")
+    SiteNames: Union[str, None]  # = Field(..., alias="site_names")
+    SiteID: Union[str, None]  # = Field(..., alias="site_id")
     Easting: Union[float, None]
     Northing: Union[float, None]
     geometry: Optional[dict] = None

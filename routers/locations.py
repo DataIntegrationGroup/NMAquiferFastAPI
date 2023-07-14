@@ -396,7 +396,7 @@ def location_view(request: Request, pointid: str, db: Session = Depends(get_db))
     # q = public_release_filter(q)
     # loc = q.first()
     loc = get_location(pointid, db)
-    print(loc, 'asdf')
+    print(loc, "asdf")
     if loc is not None:
         loc = schemas.Location.from_orm(loc)
     else:
