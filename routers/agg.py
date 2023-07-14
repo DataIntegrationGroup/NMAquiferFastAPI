@@ -26,9 +26,10 @@ from routers.usgs import get_site_metadata
 
 router = APIRouter(prefix="/agg", tags=["aggregation"])
 
-@router.get('/{pointid}/sitemetadata')
-def get_agg_sitemetadata(pointid: str, db: Session=Depends(get_db) ):
-    nmbgmr_sm = location= get_location(pointid, db)
+
+@router.get("/{pointid}/sitemetadata")
+def get_agg_sitemetadata(pointid: str, db: Session = Depends(get_db)):
+    nmbgmr_sm = location = get_location(pointid, db)
     if nmbgmr_sm:
         nmbgmr_sm = schemas.Location.from_orm(nmbgmr_sm)
 
@@ -37,7 +38,7 @@ def get_agg_sitemetadata(pointid: str, db: Session=Depends(get_db) ):
 
     usgs_sm = get_site_metadata(location=location)
 
-    return {'usgs': usgs_sm, 'ose': ose_sm, 'nmbgmr': nmbgmr_sm}
+    return {"usgs": usgs_sm, "ose": ose_sm, "nmbgmr": nmbgmr_sm}
 
 
 # ============= EOF =============================================
