@@ -350,11 +350,6 @@ templates = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
 def make_hydrograph(pointid, db, location):
     fig = go.Figure()
-    manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
-    mxs = [w.DateMeasured for w in manual_waterlevels]
-    mys = [w.DepthToWaterBGS for w in manual_waterlevels]
-
-    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual WL"))
 
     continuous_waterlevels = read_waterlevels_pressure_query(
         pointid, db, as_dict=True
@@ -380,6 +375,12 @@ def make_hydrograph(pointid, db, location):
                     name="USGS GWL",
                 )
             )
+
+    manual_waterlevels = read_waterlevels_manual_query(pointid, db).all()
+    mxs = [w.DateMeasured for w in manual_waterlevels]
+    mys = [w.DepthToWaterBGS for w in manual_waterlevels]
+
+    fig.add_trace(go.Scatter(x=mxs, y=mys, mode="markers", name="Manual WL"))
 
     fig.update_layout(
         margin={"l": 20, "r": 10, "t": 35, "b": 10},

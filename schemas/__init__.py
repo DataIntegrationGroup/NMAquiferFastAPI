@@ -17,7 +17,7 @@ from datetime import datetime, date
 from typing import Union, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class ORMBaseModel(BaseModel):
@@ -39,12 +39,16 @@ class Location(ORMBaseModel):
     PublicRelease: bool
     AlternateSiteID: Union[str, None]  # = Field(..., alias="alternate_site_id")
     elevation_method: Union[str, None]  # = Field(..., alias="elevation_method")
+    Elevation: Union[float, None]
     SiteNames: Union[str, None]  # = Field(..., alias="site_names")
     SiteID: Union[str, None]  # = Field(..., alias="site_id")
     Easting: Union[float, None]
     Northing: Union[float, None]
     geometry: Optional[dict] = None
 
+    @validator('Elevation')
+    def elevation_check(cls, v):
+        return round(v, 2)
 
 class ProjectLocations(ORMBaseModel):
     GlobalID: Union[UUID, None]
@@ -144,5 +148,7 @@ class Well(ORMBaseModel):
 
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
 
-
+    @validator('CasingDiameter','MPHeight')
+    def round(cls, v):
+        return round(v, 2)
 # ============= EOF =============================================

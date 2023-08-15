@@ -57,6 +57,10 @@ class Location(Base):
     lu_elevation_method = relationship("LU_AltitudeMethod", uselist=False)
 
     @property
+    def Elevation(self):
+        return self.Altitude
+
+    @property
     def elevation_method(self):
         return self.lu_elevation_method.Meaning
 

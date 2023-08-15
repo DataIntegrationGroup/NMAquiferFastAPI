@@ -166,14 +166,21 @@
             return Object.keys(d[0]).map(function(key) {
                 return {'name': key, 'value': d[0][key]}})
         }
-
         function totable(d){
-            return Object.keys(d).map(function(key) {
-                return {'name': key, 'value': d[key]}})}
+            return Object.keys(d)
+                .map(function(key) {
+                    return {'name': key, 'value': d[key]}})}
+
+        function towelltable(d){
+            return Object.keys(d)
+                .filter(function (key) {
+                    return !(['WellID', 'LocationId'].includes(key))})
+                .map(function(key) {
+                    return {'name': key, 'value': d[key]}})}
 
         function tolocationtable(d){
             return Object.keys(d).filter(function(key){
-                return key !== 'geometry'
+                return !['geometry', 'LocationId'].includes(key)
 
             }).map(function(key) {
                 return {'name': key, 'value': d[key]}})
@@ -201,7 +208,7 @@
 
 
         loadtable('#locationtable', 'location', tolocationtable)
-        loadtable('#welltable', 'well', totable)
+        loadtable('#welltable', 'well', towelltable)
         loadtable('#ownerstable', 'owners', totable)
 
         const ecolumns = [

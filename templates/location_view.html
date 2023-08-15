@@ -108,63 +108,45 @@
             </div>
         </div>
         <div class="row">
-            <div id="photocontainer"></div>
+            <div class="col-sm-6">
+                <h4>Location</h4>
+                <table id="locationtable" class="display compact">
+                    <thead>
+                    <tr><th>Name</th><th>Value</th></tr>
+                    </thead>
+                </table>
+
+            </div>
+            <div class="col-sm-6">
+                <h4>Well</h4>
+                <table id="welltable" class="display compact">
+                    <thead>
+                    <tr><th>Name</th><th>Value</th></tr>
+                    </thead>
+                </table>
+            </div>
         </div>
+
+{#        <div class="row">#}
+{#            <div id="photocontainer"></div>#}
+{#        </div>#}
+
     </div>
 
-{#    <script>#}
-{#        // load images#}
-{#        fetch('/locations/pointid/{{ location.PointID }}/photo')#}
-{#            .then(response => response.json())#}
-{#            .then(data => {#}
-{#                data.forEach(p => {#}
-{#                    var img = document.createElement('img')#}
-{#                    img.src = '/locations/photo/'+ p.OLEPath#}
-{#                    $('#photocontainer').prepend(img)#}
-{#                })#}
-{#            })#}
-{##}
-{##}
-{#        // load sensitive#}
-{#        var fdata = new FormData()#}
-{#        fdata.append('username', 'ethan')#}
-{#        fdata.append('password', 'secret')#}
-{##}
-{#        fetch('/token', {method: 'POST', body: fdata}).then(resp => resp.json()).then(data =>{#}
-{#            $('#sensitive_table').DataTable({#}
-{#                paging: false,#}
-{#                searching: false,#}
-{#                scrollY: 300,#}
-{#                info: false,#}
-{#                ajax: {#}
-{#                    url: '/locations/pointid/{{ location.PointID }}/sensitive',#}
-{#                    headers: {"Authorization": "Bearer " + data.access_token},#}
-{#                    dataSrc: function(d){#}
-{#                        return Object.keys(d).map(function(key) {#}
-{#                            return {'name': key, 'value': d[key]}#}
-{#                        })#}
-{##}
-{#                    }#}
-{#                },#}
-{#                columns: [#}
-{#                    { data: 'name'},#}
-{#                    { data: 'value' },#}
-{#                ]#}
-{#            })#}
-{#        })#}
-{##}
-{#    </script>#}
-    <script>
 
-        fetch('/locations/pointid/{{ location.PointID }}/photo')
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(p => {
-                            var img = document.createElement('img')
-                            img.src = '/locations/photo/'+ p.OLEPath
-                            $('#photocontainer').prepend(img)
-                        })
-                    })
+    <script>
+        //disable photos
+        {#fetch('/locations/pointid/{{ location.PointID }}/photo')#}
+        {#            .then(response => response.json())#}
+        {#            .then(data => {#}
+        {#                data.forEach(p => {#}
+        {#                    var img = document.createElement('img')#}
+        {#                    img.src = '/locations/photo/'+ p.OLEPath#}
+        {#                    $('#photocontainer').prepend(img)#}
+        {#                })#}
+        {#            })#}
+
+
         {# chart loading script #}
         let graphs = {{ graphJSON | safe }}
 
@@ -178,24 +160,6 @@
                 initMap({{ location.geometry.coordinates }}, 12, '/locations/pointid/{{ location.PointID }}/geojson');
             });
 
-        {#$('#sensitive_table').DataTable({#}
-        {#    paging: false,#}
-        {#    searching: false,#}
-        {#    scrollY: 300,#}
-        {#    info: false,#}
-        {#    ajax: {#}
-        {#        url: '/locations/pointid/{{ location.PointID }}/sensitive',#}
-        {#        dataSrc: function(d){#}
-        {#            return Object.keys(d).map(function(key) {#}
-        {#                return {'name': key, 'value': d[key]}#}
-        {#            })#}
-        {#        }#}
-        {#    },#}
-        {#    columns: [#}
-        {#        { data: 'name'},#}
-        {#        { data: 'value' },#}
-        {#    ]#}
-        {# } )#}
 
         $('#location_table').DataTable({
             paging: false,
@@ -226,9 +190,14 @@
                         let pod = d['features'][0]['attributes']
                         $('#water_right').attr('href', pod['nmwrrs_wrs'])
 
-                        return Object.keys(pod).map(function(key) {
+                        let ret = Object.keys(pod).filter(function(d){
+                            return !(['addr1', 'addr2', 'contact_fn', 'contact_ln']).includes(d)
+                        }).map(function(key) {
                             return {'name': key, 'value': pod[key]}
                         })
+
+                        return ret
+
                     } catch (e) {
                         return []
                     }
@@ -239,6 +208,44 @@
         {% endif %}
         $('#pod_table').DataTable( options);
 
+
+        function towelltable(d){
+            return Object.keys(d)
+                .filter(function (key) {
+                    return !(['WellID', 'LocationId'].includes(key))})
+                .map(function(key) {
+                return {'name': key, 'value': d[key]}})}
+
+        function tolocationtable(d){
+            return Object.keys(d).filter(function(key){
+                return !['geometry', 'LocationId'].includes(key)
+
+            }).map(function(key) {
+                return {'name': key, 'value': d[key]}})
+
+        }
+        const columns = [
+            { data: 'name'},
+            { data: 'value' },
+        ]
+        function loadtable(id, tag, parser){
+            $(id).DataTable({
+                    ordering: false,
+                    searching: false,
+                    paging: false,
+                    info: false,
+
+                    columns: columns,
+                    ajax: {
+                        url: '/locations/{{ location.PointID }}/'+tag,
+                        dataSrc: parser}
+                }
+            )
+
+        }
+
+        loadtable('#locationtable', 'location', tolocationtable)
+        loadtable('#welltable', 'well', towelltable)
     </script>
 
 {% endblock %}

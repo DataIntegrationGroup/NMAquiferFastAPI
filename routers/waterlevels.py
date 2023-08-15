@@ -15,6 +15,7 @@
 # ===============================================================================
 import csv
 import io
+from datetime import datetime
 
 from fastapi import Depends, APIRouter
 from fastapi_pagination import Page, LimitOffsetPage
@@ -58,6 +59,21 @@ def read_waterlevels_pressure(pointid: str = None, db: Session = Depends(get_db)
     return paginate(q)
 
 
+@router.delete("/pressure/{pointid}")
+def delete_waterlevels_pressure(pointid: str,
+                                start_date: datetime = None,
+                                end_date: datetime = None, db: Session = Depends(get_db)):
+    q = db.query(models.WaterLevelsContinuous_Pressure).filter_by(pointid=pointid)
+    if start_date:
+        q = q.filter(models.WaterLevelsContinuous_Pressure.DateMeasured > start_date)
+    if end_date:
+        q = q.filter(models.WaterLevelsContinuous_Pressure.DateMeasured < start_date)
+
+    q.delete()
+    db.commit()
+    return {"success": True}
+
+
 @router.get(
     "/acoustic", response_model=Page[waterlevels.WaterLevelsContinuous_Acoustic]
 )
@@ -78,25 +94,28 @@ def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
     pressure = read_waterlevels_pressure_query(pointid, db).all()
 
     rows = []
-    rows.append(["#DateMeasured", "DepthToWater (ftbgs)"])
-    rows.append(["#Manual Water Levels"])
+    # rows.append(["#DateMeasured", "DepthToWater (ftbgs)", "MeasurementMethod"])
+    # rows.append(["#Manual Water Levels"])
 
     for mi in manual:
-        row = [mi.DateMeasured, mi.DepthToWaterBGS]
+        row = [mi.DateMeasured, mi.DepthToWaterBGS, 'Manual']
         rows.append(row)
 
     if acoustic:
-        rows.append(["#Acoustic Water Levels"])
+        # rows.append(["#Acoustic Water Levels"])
         for ai in acoustic:
-            row = [ai.DateMeasured, ai.DepthToWaterBGS]
+            row = [ai.DateMeasured, ai.DepthToWaterBGS, 'Acoustic']
             rows.append(row)
 
     if pressure:
-        rows.append(["#Pressure Water Levels"])
+        # rows.append(["#Pressure Water Levels"])
         for pi in pressure:
-            row = [pi.DateMeasured, pi.DepthToWaterBGS]
+            row = [pi.DateMeasured, pi.DepthToWaterBGS, 'Pressure']
             rows.append(row)
 
+    rows = sorted(rows, key=lambda x: x[0].date() if isinstance(x[0], datetime) else x[0])
+
+    rows.insert(0, ["DateMeasured", "DepthToWater (ftbgs)", "MeasurementMethod"])
     stream = io.StringIO()
     writer = csv.writer(stream)
     writer.writerows(rows)
@@ -106,6 +125,5 @@ def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
         "Content-Disposition"
     ] = f"attachment; filename={pointid}_waterlevels.csv"
     return response
-
 
 # ============= EOF =============================================
