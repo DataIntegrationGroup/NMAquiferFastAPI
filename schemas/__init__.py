@@ -46,9 +46,10 @@ class Location(ORMBaseModel):
     Northing: Union[float, None]
     geometry: Optional[dict] = None
 
-    @validator('Elevation')
+    @validator("Elevation")
     def elevation_check(cls, v):
         return round(v, 2)
+
 
 class ProjectLocations(ORMBaseModel):
     GlobalID: Union[UUID, None]
@@ -148,7 +149,9 @@ class Well(ORMBaseModel):
 
     StaticWater: Union[float, None] = Field(..., alias="static_water_level_ftbgs")
 
-    @validator('CasingDiameter','MPHeight')
+    @validator("CasingDiameter", "MPHeight")
     def round(cls, v):
         return round(v, 2)
+
+
 # ============= EOF =============================================

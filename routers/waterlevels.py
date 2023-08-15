@@ -60,9 +60,12 @@ def read_waterlevels_pressure(pointid: str = None, db: Session = Depends(get_db)
 
 
 @router.delete("/pressure/{pointid}")
-def delete_waterlevels_pressure(pointid: str,
-                                start_date: datetime = None,
-                                end_date: datetime = None, db: Session = Depends(get_db)):
+def delete_waterlevels_pressure(
+    pointid: str,
+    start_date: datetime = None,
+    end_date: datetime = None,
+    db: Session = Depends(get_db),
+):
     q = db.query(models.WaterLevelsContinuous_Pressure).filter_by(pointid=pointid)
     if start_date:
         q = q.filter(models.WaterLevelsContinuous_Pressure.DateMeasured > start_date)
@@ -98,22 +101,24 @@ def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
     # rows.append(["#Manual Water Levels"])
 
     for mi in manual:
-        row = [mi.DateMeasured, mi.DepthToWaterBGS, 'Manual']
+        row = [mi.DateMeasured, mi.DepthToWaterBGS, "Manual"]
         rows.append(row)
 
     if acoustic:
         # rows.append(["#Acoustic Water Levels"])
         for ai in acoustic:
-            row = [ai.DateMeasured, ai.DepthToWaterBGS, 'Acoustic']
+            row = [ai.DateMeasured, ai.DepthToWaterBGS, "Acoustic"]
             rows.append(row)
 
     if pressure:
         # rows.append(["#Pressure Water Levels"])
         for pi in pressure:
-            row = [pi.DateMeasured, pi.DepthToWaterBGS, 'Pressure']
+            row = [pi.DateMeasured, pi.DepthToWaterBGS, "Pressure"]
             rows.append(row)
 
-    rows = sorted(rows, key=lambda x: x[0].date() if isinstance(x[0], datetime) else x[0])
+    rows = sorted(
+        rows, key=lambda x: x[0].date() if isinstance(x[0], datetime) else x[0]
+    )
 
     rows.insert(0, ["DateMeasured", "DepthToWater (ftbgs)", "MeasurementMethod"])
     stream = io.StringIO()
@@ -125,5 +130,6 @@ def read_waterlevels_csv(pointid: str, db: Session = Depends(get_db)):
         "Content-Disposition"
     ] = f"attachment; filename={pointid}_waterlevels.csv"
     return response
+
 
 # ============= EOF =============================================
