@@ -283,7 +283,9 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
     )
 
 
-@router.get('/{pointid}/manualwaterlevels', response_model=List[waterlevels.WaterLevels])
+@router.get(
+    "/{pointid}/manualwaterlevels", response_model=List[waterlevels.WaterLevels]
+)
 def location_manual_waterlevels(pointid: str, db: Session = Depends(get_db)):
     q = db.query(models.WaterLevels)
     q = q.join(models.Well)
