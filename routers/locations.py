@@ -37,6 +37,7 @@ from starlette.templating import Jinja2Templates
 
 import models
 import schemas
+from schemas import waterlevels
 from crud import (
     public_release_filter,
     read_waterlevels_manual_query,
@@ -280,6 +281,14 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
             "pod_url": pod_url or "",
         },
     )
+
+
+@router.get('/{pointid}/manualwaterlevels', response_model=List[waterlevels.WaterLevels])
+def location_manual_waterlevels(pointid: str, db: Session = Depends(get_db)):
+    q = db.query(models.WaterLevels)
+    q = q.join(models.Well)
+    q = q.filter(models.Well.PointID == pointid)
+    return q.all()
 
 
 @router.get("/{pointid}/notes")
