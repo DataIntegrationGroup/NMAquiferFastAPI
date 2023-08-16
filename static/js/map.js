@@ -40,6 +40,7 @@ function initMap(center, zoom, dataurl){
     });
 
     document.getElementById('geocoder-container').appendChild(geocoder.onAdd(map));
+    map.addControl(new mapboxgl.NavigationControl());
 
     map.on('mouseenter', 'wells', (e) => {
         map.getCanvas().style.cursor = 'pointer';
