@@ -329,14 +329,14 @@
                 initMap({{ location.geometry.coordinates }}, 12, '/locations/pointid/'+ pointid +'/geojson');
             });
 
-        {#fetch('/locations/pointid/{{ location.PointID }}/photo')#}
-        {#    .then(response => response.json())#}
-        {#    .then(data => {#}
-        {#        data.forEach(p => {#}
-        {#            var img = document.createElement('img')#}
-        {#            img.src = '/locations/photo/'+ p.OLEPath#}
-        {#            $('#photocontainer').prepend(img)#}
-        {#        })#}
-        {#    })#}
+        fetch('/locations/pointid/{{ location.PointID }}/photo')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(p => {
+                    var img = document.createElement('img')
+                    img.src = '/locations/photo/'+ p.OLEPath
+                    $('#photocontainer').prepend(img)
+                })
+            })
     </script>
 {% endblock %}
