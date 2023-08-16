@@ -15,12 +15,12 @@
 # ===============================================================================
 import json
 
-import redis as redis
+# import redis as redis
 from fastapi import Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi_pagination import add_pagination
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
+# from fastapi_cache import FastAPICache
+# from fastapi_cache.backends.redis import RedisBackend
 
 from sqlalchemy.orm import Session
 
@@ -104,13 +104,13 @@ app.include_router(agg.router)
 add_pagination(app)
 
 
-@app.on_event("startup")
-async def startup_event():
-    # db = redis.from_url("redis://localhost:6379")
-    # print('ddd', db)
-    pool = redis.ConnectionPool(host="localhost", port=6379, db=0)
-    db = redis.Redis(connection_pool=pool)
-    FastAPICache.init(RedisBackend(db), prefix="fastapi-cache")
+# @app.on_event("startup")
+# async def startup_event():
+#     # db = redis.from_url("redis://localhost:6379")
+#     # print('ddd', db)
+#     pool = redis.ConnectionPool(host="localhost", port=6379, db=0)
+#     db = redis.Redis(connection_pool=pool)
+#     FastAPICache.init(RedisBackend(db), prefix="fastapi-cache")
 
 
 if __name__ == "__main__":
