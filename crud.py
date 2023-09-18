@@ -120,12 +120,14 @@ def read_equipment(pointid, db):
     return q.all()
 
 
-def read_well(pointid, db):
+def read_well(pointid, db, public_release=False):
     q = db.query(models.Well)
     if pointid:
         q = q.join(models.Location)
         q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
+
+    if public_release:
+        q = public_release_filter(q)
     return q.first()
 
 
@@ -180,10 +182,12 @@ def locations_feature_collection(locations):
 
 
 # ============= EOF =============================================
-def get_location(pointid, db):
+def get_location(pointid, db, public_release=False):
     q = db.query(models.Location)
     q = q.filter(models.Location.PointID == pointid)
-    q = public_release_filter(q)
+    if public_release:
+        q = public_release_filter(q)
+
     return q.first()
 
 

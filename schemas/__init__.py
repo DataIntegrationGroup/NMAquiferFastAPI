@@ -48,7 +48,10 @@ class Location(ORMBaseModel):
 
     @validator("Elevation")
     def elevation_check(cls, v):
-        return round(v, 2)
+        if v is not None:
+            return round(v, 2)
+        else:
+            return 0
 
 
 class ProjectLocations(ORMBaseModel):
@@ -120,7 +123,7 @@ class LocationJSONLD(Location):
 
 class LocationGeoJSON(ORMBaseModel):
     type: str = "Feature"
-    properties: dict = Field(..., alias="properties")
+    properties:  dict = Field(default={}, alias="properties")
     geometry: dict = Field(..., alias="geometry")
 
 
@@ -151,7 +154,7 @@ class Well(ORMBaseModel):
 
     @validator("CasingDiameter", "MPHeight")
     def round(cls, v):
-        return round(v, 2)
-
+        if v is not None:
+            return round(v, 2)
 
 # ============= EOF =============================================

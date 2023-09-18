@@ -271,6 +271,15 @@ def location_detail(request: Request, pointid: str, db: Session = Depends(get_db
     if well is not None:
         pod_url = well.pod_url
 
+
+    print({
+        "request": request,
+        "pointid": pointid,
+        "location": loc.dict() if loc else {},
+        "graphJSON": make_hydrograph(pointid, db, location),
+        "pod_url": pod_url or "",
+    })
+
     return templates.TemplateResponse(
         "location_detail_view.html",
         {

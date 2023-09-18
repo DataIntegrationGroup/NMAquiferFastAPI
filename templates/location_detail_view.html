@@ -174,6 +174,9 @@
         }
         function tousgstable(d){
             console.log('fasd', d[0])
+            if (d[0] === undefined){
+                return []
+            }
             return Object.keys(d[0]).map(function(key) {
                 return {'name': key, 'value': d[0][key]}})
         }
@@ -326,7 +329,11 @@
             .then(response => response.json())
             .then(data => {
                 mapboxgl.accessToken = data.token;
-                initMap({{ location.geometry.coordinates }}, 12, '/locations/pointid/'+ pointid +'/geojson');
+
+                let lon = {{  location.geometry.coordinates[0] }};
+                let lat = {{ location.geometry.coordinates[1] }};
+
+                initMap({lon, lat}, 12, '/locations/pointid/'+ pointid +'/geojson');
             });
 
         fetch('/locations/pointid/{{ location.PointID }}/photo')
