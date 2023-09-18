@@ -123,7 +123,7 @@ class LocationJSONLD(Location):
 
 class LocationGeoJSON(ORMBaseModel):
     type: str = "Feature"
-    properties:  dict = Field(default={}, alias="properties")
+    properties: dict = Field(default={}, alias="properties")
     geometry: dict = Field(..., alias="geometry")
 
 
@@ -156,5 +156,6 @@ class Well(ORMBaseModel):
     def round(cls, v):
         if v is not None:
             return round(v, 2)
+
 
 # ============= EOF =============================================
