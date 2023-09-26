@@ -73,7 +73,7 @@ class Location(Base):
             # convert feet to meters
             elevation *= 0.3048
 
-        return {"coordinates": [lon, lat, elevation], "type": "Point"}
+        return {"coordinates": [lon, lat, elevation or 0], "type": "Point"}
 
     _lonlat = None
 
